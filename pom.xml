@@ -21,6 +21,7 @@
 	<modules>
 		<module>feign-server</module>
 		<module>eureka-server</module>
+		<module>data-server</module>
 		<module>ribbon-server</module>
 	</modules>
 
