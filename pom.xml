@@ -19,10 +19,9 @@
 	</parent>
 	
 	<modules>
-		<module>feign-server</module>
 		<module>eureka-server</module>
-		<module>data-server</module>
-		<module>ribbon-server</module>
+		<module>gateway-server</module>
+		<module>auth-server</module>
 	</modules>
 
 	<properties>
@@ -33,15 +32,17 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
 			<version>${fastjson.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	
