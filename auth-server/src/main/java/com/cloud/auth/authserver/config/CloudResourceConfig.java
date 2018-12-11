@@ -5,7 +5,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 
 /**
  * 资源服务器
- * 作用：获取用户信息
  */
 @Configuration
 @EnableResourceServer

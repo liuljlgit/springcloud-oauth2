@@ -5,7 +5,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 
 /**
  * 认证服务器
- * 进行token认证
  */
 @Configuration
 @EnableAuthorizationServer
