@@ -3,11 +3,13 @@ package com.cloud.auth.authserver.service.impl;
 import com.cloud.auth.authserver.service.inft.UserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 /**
  * 自定义获取用户信息service
  * 其中：需实现oauth2包中的UserDetailService接口来获取用户信息
  */
+@Service
 public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
