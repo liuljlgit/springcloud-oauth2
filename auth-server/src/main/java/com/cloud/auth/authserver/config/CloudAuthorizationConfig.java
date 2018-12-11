@@ -105,18 +105,27 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
         endpoints.tokenGranter(tokenGranter);
     }
 
+    /**
+     * TokenGranter:令牌授予者
+     * AuthorizationCodeTokenGranter:授权码模式
+     * ClientCredentialsTokenGranter:客户端模式
+     * ImplicitTokenGranter:implicit 模式
+     * RefreshTokenGranter:刷新 token 模式
+     * ResourceOwnerPasswordTokenGranter:密码模式
+     * @param tokenServices
+     * @param clientDetails
+     * @param requestFactory
+     * @return
+     */
     private List<TokenGranter> getDefaultTokenGranters(@Qualifier("cloudTokenServices") DefaultTokenServices tokenServices, ClientDetailsService clientDetails, @Qualifier("cloudOauth2RequestFactory") OAuth2RequestFactory requestFactory) {
         AuthorizationCodeServices authorizationCodeServices = authorizationCodeServices();
         List<TokenGranter> tokenGranters = new ArrayList<>();
-        tokenGranters.add(new AuthorizationCodeTokenGranter(tokenServices, authorizationCodeServices, clientDetails,
-                requestFactory));
+        tokenGranters.add(new AuthorizationCodeTokenGranter(tokenServices, authorizationCodeServices, clientDetails, requestFactory));
         tokenGranters.add(new RefreshTokenGranter(tokenServices, clientDetails, requestFactory));
-        ImplicitTokenGranter implicit = new ImplicitTokenGranter(tokenServices, clientDetails, requestFactory);
-        tokenGranters.add(implicit);
+        tokenGranters.add(new ImplicitTokenGranter(tokenServices, clientDetails, requestFactory));
         tokenGranters.add(new ClientCredentialsTokenGranter(tokenServices, clientDetails, requestFactory));
         if (authenticationManager != null) {
-            tokenGranters.add(new ResourceOwnerPasswordTokenGranter(authenticationManager, tokenServices,
-                    clientDetails, requestFactory));
+            tokenGranters.add(new ResourceOwnerPasswordTokenGranter(authenticationManager, tokenServices, clientDetails, requestFactory));
         }
         return tokenGranters;
     }
