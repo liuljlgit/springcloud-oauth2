@@ -58,4 +58,5 @@ springcloud oauth2实现：
   生成证书后:可放置在项目的resource目录下
 4.oauth2包中拥有一些UserDetailsService接口需要我们实现,通过实现这个接口获取用户的账号密码和权限信息
 5.咱们springcloud架构单点认证，我们在auth-server中进行认证和授权得到令牌后再去访问其他的微服务，应该是在网关层进行代理验证是否进行登录和是否有相应的微服务权限
+6.目标:先不经过网关配置一个auth-server,使用密码模式,看看能否返回令牌
 
