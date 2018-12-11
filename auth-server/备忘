@@ -47,7 +47,7 @@ springcloud oauth2实现：
 1.使用@EnableResourceServer声明一个资源服务器
 2.使用@EnableAuthorizationServer声明一个认证服务器
   注意:资源服务器和认证服务器可在同一个项目中
-3.如何通过JDK生成JKS证书？
+3.如何通过JDK生成JKS证书？（作用:可以用来生成jwtAccessTokenConverter）
     keytool -genkeypair -alias oauth2jks -keyalg RSA -keypass 123456 -keystore keystore.jks -storepass 123456
     名字和姓氏:liulijun
     单位名称:huidian
@@ -56,3 +56,5 @@ springcloud oauth2实现：
     省/市/自治区:guangdong
     地区代码:GD
   生成证书后:可放置在项目的resource目录下
+4.oauth2包中拥有一些UserDetailsService接口需要我们实现,通过实现这个接口获取用户的账号密码和权限信息
+
