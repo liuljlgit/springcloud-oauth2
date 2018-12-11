@@ -38,6 +38,13 @@
 			<artifactId>spring-cloud-starter-security</artifactId>
 		</dependency>
 		
+		<!--引入代码生成包-->
+		<dependency>
+			<groupId>com.gen</groupId>
+			<artifactId>autocode</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
