@@ -1,6 +1,7 @@
 package com.cloud.auth.authserver.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.Http401AuthenticationEntryPoint;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -26,9 +27,13 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
-                .authorizeRequests()
-                .anyRequest().permitAll();
+        http.csrf().disable()
+            .exceptionHandling()
+            .authenticationEntryPoint(new Http401AuthenticationEntryPoint("Bearer realm=\"webrealm\""))
+            .and()
+            .authorizeRequests().anyRequest().authenticated()
+            .and()
+            .httpBasic();
     }
 
 }
