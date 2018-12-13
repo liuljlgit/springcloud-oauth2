@@ -31,7 +31,9 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
+        //配置资源ID
         resources.resourceId(RESOURCE_ID).stateless(true);
+        //配置未授权返回格式
         resources.authenticationEntryPoint(new AuthExceptionEntryPoint())
                 .accessDeniedHandler(new CustomAccessDeniedHandler());
     }
