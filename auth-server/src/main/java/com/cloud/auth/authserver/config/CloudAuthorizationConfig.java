@@ -118,7 +118,7 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
      * @return
      */
     private List<TokenGranter> getDefaultTokenGranters(@Qualifier("cloudTokenServices") DefaultTokenServices tokenServices, ClientDetailsService clientDetails, @Qualifier("cloudOauth2RequestFactory") OAuth2RequestFactory requestFactory) {
-        AuthorizationCodeServices authorizationCodeServices = authorizationCodeServices();
+        AuthorizationCodeServices authorizationCodeServices = new InMemoryAuthorizationCodeServices();
         List<TokenGranter> tokenGranters = new ArrayList<>();
         tokenGranters.add(new AuthorizationCodeTokenGranter(tokenServices, authorizationCodeServices, clientDetails, requestFactory));
         tokenGranters.add(new RefreshTokenGranter(tokenServices, clientDetails, requestFactory));
@@ -128,10 +128,6 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
             tokenGranters.add(new ResourceOwnerPasswordTokenGranter(authenticationManager, tokenServices, clientDetails, requestFactory));
         }
         return tokenGranters;
-    }
-
-    private AuthorizationCodeServices authorizationCodeServices() {
-        return new InMemoryAuthorizationCodeServices();
     }
 
     @Override
