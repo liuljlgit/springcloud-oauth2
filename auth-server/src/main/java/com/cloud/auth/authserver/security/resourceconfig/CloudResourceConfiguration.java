@@ -1,4 +1,4 @@
-package com.cloud.auth.authserver.security;
+package com.cloud.auth.authserver.security.resourceconfig;
 
 import java.util.List;
 

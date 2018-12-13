@@ -1,4 +1,4 @@
-package com.cloud.auth.authserver.security;
+package com.cloud.auth.authserver.security.resourceconfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.AuthenticationException;

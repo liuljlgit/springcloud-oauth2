@@ -1,8 +1,8 @@
 package com.cloud.auth.authserver.config;
 
-import com.cloud.auth.authserver.security.AuthExceptionEntryPoint;
-import com.cloud.auth.authserver.security.CloudResourceConfiguration;
-import com.cloud.auth.authserver.security.CustomAccessDeniedHandler;
+import com.cloud.auth.authserver.security.resourceconfig.AuthExceptionEntryPoint;
+import com.cloud.auth.authserver.security.resourceconfig.CloudResourceConfiguration;
+import com.cloud.auth.authserver.security.resourceconfig.CustomAccessDeniedHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
