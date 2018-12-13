@@ -92,6 +92,14 @@ public interface ISysUserService {
     <T> List<SysUser> findSysUserList(T t, Boolean useCache) throws Exception;
 
     /**
+     * 根据ID列表从数据库中查询列表
+     * @param list
+     * @return
+     * @throws Exception
+     */
+    List<SysUser> findSysUserListByIds(List<Long> list) throws Exception;
+
+    /**
      * 分页查询列表
      * @param sysUser
      * @param useCache

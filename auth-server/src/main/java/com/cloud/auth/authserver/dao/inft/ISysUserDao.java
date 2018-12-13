@@ -1,10 +1,11 @@
 package com.cloud.auth.authserver.dao.inft;
 
-import java.util.*;
+import com.cloud.auth.authserver.entity.SysUser;
+import com.cloud.common.complexquery.QueryExample;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
-import com.cloud.common.complexquery.QueryExample;
-import com.cloud.auth.authserver.entity.SysUser;
+
+import java.util.List;
 
 /**
   * 接口类 ISysUserDao
@@ -92,5 +93,12 @@ public interface ISysUserDao {
      * @return
      */
      List<SysUser> getSysUserListExample(QueryExample queryExample);
+
+     /**
+      * 根据ID列表从数据库中查询列表
+      * @param list
+      * @return
+      */
+      List<SysUser> findSysUserListByIds(List<Long> list);
 }
 

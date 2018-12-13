@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -271,36 +268,30 @@ public class SysUserServiceImpl implements ISysUserService{
                 sysUserRedis.setSysUserList(t,sysUsers,IConst.MINUTE_15_EXPIRE);
                 return sysUsers;
             }
-            //把已经过期的值重新获取到redis缓存中。如果数据库由于某种原因丢失了数据,那么删除缓存,并且重新从数据库中获取值,注意list中的列表顺序不能改变。
-            //只有丢失率小于1/3 && 获取数量小于1000条的时候选择重新一条条的去获取记录,否则从数据库中直接查询
-            Map<Long, SysUser> notNullList = sysUsers.stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toMap(e -> e.getSuId(), e -> e));
-            Integer notNullCount = notNullList.size();
-            Integer nullCount = ids.size()-notNullCount;
-            if(notNullCount >= ids.size()*(2/3) && nullCount<1000){
-                logger.info("===> fetch page list from redis");
-                List<SysUser> listForBack = new ArrayList<>() ;
-                for(Long suId : ids){
-                    if(notNullList.containsKey(suId)){
-                        listForBack.add(notNullList.get(suId));
-                    }else{
-                        SysUser item = loadSysUserByKey(suId);
-                        //如果我们在获取记录的期间,这个item被并发删除了,那么我们需重新执行一遍查询。
-                        if(Objects.isNull(item)){
-                            logger.info("===> appear null item,so fetch page list again from database");
-                            list = findSysUserList(t);
-                            sysUserRedis.setSysUserList(t,list,IConst.MINUTE_15_EXPIRE);
-                            return list;
-                        }else{
-                            listForBack.add(item);
-                        }
-                    }
-                }
-                return listForBack;
-            }else{
+            //把已经过期的ID拿出来再一次性的去数据库里面获取出来并转成一个Map
+            Map<Long, SysUser> notNullMap = sysUsers.stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toMap(e -> e.getSuId(), e -> e));
+            List<Long> nullIds = ids.stream().filter(e->!notNullMap.containsKey(e)).collect(Collectors.toList());
+            Map<Long,SysUser> nullMap = findSysUserListByIds(nullIds).stream().collect(Collectors.toMap(e->e.getSuId(),e->e));
+            if(nullIds.size() != nullMap.size()){
                 logger.info("===> fetch page list from database");
                 list = findSysUserList(t);
                 sysUserRedis.setSysUserList(t,list,IConst.MINUTE_15_EXPIRE);
                 return list;
+            }else{
+                List<SysUser> listForBack = new ArrayList<>() ;
+                for(int i=0;i<ids.size();i++){
+                    if(notNullMap.containsKey(ids.get(i))){
+                        listForBack.add(notNullMap.get(ids.get(i)));
+                    }else if(nullMap.containsKey(ids.get(i))){
+                        listForBack.add(nullMap.get(ids.get(i)));
+                    }else{
+                        logger.info("===> fetch page list from database");
+                        list = findSysUserList(t);
+                        sysUserRedis.setSysUserList(t,list,IConst.MINUTE_15_EXPIRE);
+                        return list;
+                    }
+                }
+                return listForBack;
             }
         }else{
             logger.info("===> fetch page list from database");
@@ -326,6 +317,20 @@ public class SysUserServiceImpl implements ISysUserService{
             throw new Exception("选择类型不正确");
         }
         return list;
+    }
+
+    /**
+     * 根据ID列表从数据库中查询列表
+     * @param list
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<SysUser> findSysUserListByIds(List<Long> list) throws Exception {
+        if(CollectionUtils.isEmpty(list)){
+            return Collections.EMPTY_LIST;
+        }
+        return sysUserDao.findSysUserListByIds(list);
     }
 
     /**

@@ -277,7 +277,7 @@
     </select>
 
     <!--复杂查询获取总数-->
-    <select id="getSysUserCountByExample" resultType="java.lang.Long">
+    <select id="getSysUserCountExample" resultType="java.lang.Long">
         select count(*) from sys_user
         <where>
             <include refid="Example_Where_Clause" />
@@ -285,7 +285,7 @@
     </select>
 
     <!--复杂查询查询列表-->
-    <select id="getSysUserListByExample" resultMap="BaseResultMap">
+    <select id="getSysUserListExample" resultMap="BaseResultMap">
         select <include refid="Base_Column_List" /> from sys_user
         <where>
             <include refid="Example_Where_Clause" />
@@ -316,5 +316,17 @@
             </foreach>
         </where>
     </delete>
+
+    <!--根据ID列表获取记录列表-->
+    <select id="findSysUserListByIds" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_user
+        <where>
+            su_id in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
 </mapper>
 
