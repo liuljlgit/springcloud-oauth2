@@ -1,8 +1,12 @@
 package com.cloud.auth.authserver.webentity;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
-import com.cloud.common.utils.CommonUtil;
 import com.cloud.auth.authserver.entity.SysUser;
+import com.cloud.common.utils.CommonUtil;
+import com.cloud.common.utils.DateUtil;
+
+import java.util.Date;
 
 @JSONType(includes = {
     SysUser.PROP_SU_ID,
@@ -23,11 +27,25 @@ public class SysUserResp extends SysUser{
 		CommonUtil.copyPropertiesIgnoreNull(sysUser,this);
 	}
 
-    /*@Override
+    @Override
     @JSONField(format = DateUtil.DEFAUL_FORMAT)
-    public Date getDateTime() {
-        return super.getDateTime();
-    }*/
+    public Date getBirthday() {
+        return super.getBirthday();
+    }
+
+    @Override
+    @JSONField(format = DateUtil.DEFAUL_FORMAT)
+    public Date getCreateTime() {
+        return super.getCreateTime();
+    }
+
+    @Override
+    @JSONField(format = DateUtil.DEFAUL_FORMAT)
+    public Date getStatusTime() {
+        return super.getStatusTime();
+    }
+
+
 
 }
 

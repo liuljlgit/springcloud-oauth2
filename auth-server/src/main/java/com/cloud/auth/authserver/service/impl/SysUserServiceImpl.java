@@ -1,22 +1,25 @@
 package com.cloud.auth.authserver.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.cloud.auth.authserver.cache.inft.ISysUserRedis;
-import com.cloud.auth.authserver.dao.inft.ISysUserDao;
-import com.cloud.auth.authserver.entity.SysUser;
-import com.cloud.auth.authserver.service.inft.ISysUserService;
-import com.cloud.common.complexquery.QueryExample;
-import com.cloud.common.constant.IConst;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
+import com.cloud.common.complexquery.QueryExample;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.*;
+import org.springframework.util.CollectionUtils;
+import com.cloud.common.constant.IConst;
+import org.springframework.cache.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.redis.core.RedisTemplate;
+import com.cloud.common.exception.BusiException;
 import java.util.stream.Collectors;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
+import com.cloud.auth.authserver.service.inft.ISysUserService;
+import com.cloud.auth.authserver.dao.inft.ISysUserDao;
+import com.cloud.auth.authserver.entity.SysUser;
+import com.cloud.auth.authserver.cache.inft.ISysUserRedis;
+import com.cloud.auth.authserver.webentity.SysUserResp;
 
 /**
  * ISysUserService service接口类
@@ -41,7 +44,7 @@ public class SysUserServiceImpl implements ISysUserService{
     @Override
     public SysUser loadSysUserByKey(Long suId) throws Exception {
         if(Objects.isNull(suId)){
-            throw new Exception("请输入要获取的数据的ID");
+            throw new BusiException("请输入要获取的数据的ID");
         }
         SysUser sysUser;
         sysUser = sysUserRedis.getSysUser(suId);
@@ -52,7 +55,7 @@ public class SysUserServiceImpl implements ISysUserService{
         logger.info("===> fetch suId = "+suId+" entity from database");
         sysUser = sysUserDao.loadSysUserByKey(suId);
         if(Objects.isNull(sysUser)){
-            throw new Exception("没有符合条件的记录！") ;
+            throw new BusiException("没有符合条件的记录！") ;
         }
         sysUserRedis.setSysUser(sysUser,IConst.MINUTE_15_EXPIRE);
         return sysUser;
@@ -117,19 +120,25 @@ public class SysUserServiceImpl implements ISysUserService{
     /**
      * 更新对象
      * @param sysUser
+     * @param isFullUpdate
      * @return
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer updateSysUser(SysUser sysUser) throws Exception {
+    public Integer updateSysUser(SysUser sysUser,Boolean isFullUpdate) throws Exception {
         if(Objects.isNull(sysUser)){
             return 0;
         }
         if(Objects.isNull(sysUser.getSuId())){
-            throw new Exception("更新主键不能为空");
+            throw new BusiException("更新主键不能为空");
         }
-        Integer result = sysUserDao.updateSysUser(sysUser);
+        Integer result;
+        if(isFullUpdate){
+            result = sysUserDao.fullUpdateSysUser(sysUser);
+        } else {
+            result = sysUserDao.updateSysUser(sysUser);
+        }
         sysUserRedis.deleteAllHashSetByPage();
         sysUserRedis.deleteSysUser(sysUser.getSuId());
         return result;
@@ -138,21 +147,26 @@ public class SysUserServiceImpl implements ISysUserService{
     /**
      * 批量更新
      * @param list
+     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateSysUserList(List<SysUser> list) throws Exception {
+    public void updateSysUserList(List<SysUser> list,Boolean isFullUpdate) throws Exception {
         if(CollectionUtils.isEmpty(list)){
             return ;
         }
         for (SysUser sysUser : list) {
             if(Objects.isNull(sysUser.getSuId())){
-                throw new Exception("更新主键不能为空");
+                throw new BusiException("更新主键不能为空");
             }
             sysUserRedis.deleteSysUser(sysUser.getSuId());
         }
-        sysUserDao.updateSysUserList(list);
+        if(isFullUpdate){
+            sysUserDao.fullUpdateSysUserList(list);
+        } else {
+            sysUserDao.updateSysUserList(list);
+        }
         sysUserRedis.deleteAllHashSetByPage();
     }
 
@@ -166,7 +180,7 @@ public class SysUserServiceImpl implements ISysUserService{
     @Transactional(rollbackFor = Exception.class)
     public Integer deleteSysUserByKey(Long suId) throws Exception {
         if(Objects.isNull(suId)){
-            throw new Exception("请输入要删除的数据的ID");
+            throw new BusiException("请输入要删除的数据的ID");
         }
         Integer result = sysUserDao.deleteSysUserByKey(suId);
         sysUserRedis.deleteAllHashSetByPage();
@@ -187,7 +201,7 @@ public class SysUserServiceImpl implements ISysUserService{
         }
         for (SysUser sysUser : list) {
             if(Objects.isNull(sysUser.getSuId())){
-                throw new Exception("删除主键不能为空");
+                throw new BusiException("删除主键不能为空");
             }
             sysUserRedis.deleteSysUser(sysUser.getSuId());
         }
@@ -205,7 +219,7 @@ public class SysUserServiceImpl implements ISysUserService{
     @Override
     public <T> Long getTotalSysUser(T t,Boolean useCache) throws Exception {
         if(Objects.isNull(t)){
-            throw new Exception("查询参数不能为空");
+            throw new BusiException("查询参数不能为空");
         }
         Long count;
         if(useCache){
@@ -237,7 +251,7 @@ public class SysUserServiceImpl implements ISysUserService{
         }else if(t instanceof QueryExample){
             count = sysUserDao.getSysUserCountExample((QueryExample) t);
         }else{
-            throw new Exception("选择类型不正确");
+            throw new BusiException("选择类型不正确");
         }
         return count;
     }
@@ -271,7 +285,7 @@ public class SysUserServiceImpl implements ISysUserService{
             //把已经过期的ID拿出来再一次性的去数据库里面获取出来并转成一个Map
             Map<Long, SysUser> notNullMap = sysUsers.stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toMap(e -> e.getSuId(), e -> e));
             List<Long> nullIds = ids.stream().filter(e->!notNullMap.containsKey(e)).collect(Collectors.toList());
-            Map<Long,SysUser> nullMap = findSysUserListByIds(nullIds).stream().collect(Collectors.toMap(e->e.getSuId(),e->e));
+            Map<Long,SysUser> nullMap = findSysUserListByIds(nullIds,false).stream().collect(Collectors.toMap(e->e.getSuId(),e->e));
             if(nullIds.size() != nullMap.size()){
                 logger.info("===> fetch page list from database");
                 list = findSysUserList(t);
@@ -284,6 +298,7 @@ public class SysUserServiceImpl implements ISysUserService{
                         listForBack.add(notNullMap.get(ids.get(i)));
                     }else if(nullMap.containsKey(ids.get(i))){
                         listForBack.add(nullMap.get(ids.get(i)));
+                        sysUserRedis.setSysUser(nullMap.get(ids.get(i)),IConst.MINUTE_15_EXPIRE);
                     }else{
                         logger.info("===> fetch page list from database");
                         list = findSysUserList(t);
@@ -314,7 +329,7 @@ public class SysUserServiceImpl implements ISysUserService{
         }else if(t instanceof QueryExample){
             list = sysUserDao.getSysUserListExample((QueryExample) t);
         }else{
-            throw new Exception("选择类型不正确");
+            throw new BusiException("选择类型不正确");
         }
         return list;
     }
@@ -326,11 +341,29 @@ public class SysUserServiceImpl implements ISysUserService{
      * @throws Exception
      */
     @Override
-    public List<SysUser> findSysUserListByIds(List<Long> list) throws Exception {
+    public List<SysUser> findSysUserListByIds(List<Long> list,Boolean useCache) throws Exception {
         if(CollectionUtils.isEmpty(list)){
             return Collections.EMPTY_LIST;
         }
-        return sysUserDao.findSysUserListByIds(list);
+        List<SysUser> resList;
+        if(useCache){
+            resList = sysUserRedis.getSysUserListByIds(list);
+            Map<Long, SysUser> sysUserMap = resList.stream().collect(Collectors.toMap(e -> e.getSuId(), e -> e));
+            List<Long> nullList = list.stream().filter(e -> !sysUserMap.containsKey(e)).collect(Collectors.toList());
+            if(CollectionUtils.isEmpty(nullList)){
+                return resList;
+            }else{
+                List<SysUser> nullObjList = sysUserDao.findSysUserListByIds(nullList);
+                for(SysUser e : nullObjList){
+                    sysUserRedis.setSysUser(e,IConst.MINUTE_15_EXPIRE);
+                }
+                resList.addAll(nullObjList);
+                return resList;
+            }
+        }else{
+            resList = sysUserDao.findSysUserListByIds(list);
+            return resList;
+        }
     }
 
     /**
@@ -343,16 +376,16 @@ public class SysUserServiceImpl implements ISysUserService{
     @Override
     public JSONObject getPageSysUser(SysUser sysUser,Boolean useCache) throws Exception{
         if(Objects.isNull(sysUser)){
-            throw new Exception("查询参数不能为空");
+            throw new BusiException("查询参数不能为空");
         }
         if(Objects.isNull(sysUser.getPage()) || Objects.isNull(sysUser.getPageSize()) || IConst.PAGE_NO_USE.equals(sysUser.getPage())){
-            throw new Exception("分页请求入参异常");
+            throw new BusiException("分页请求入参异常");
         }
         JSONObject resp = new JSONObject();
         sysUser.setTotal(getTotalSysUser(sysUser, useCache).intValue());
         resp.put("total",sysUser.getTotal());
         resp.put("totalPage",sysUser.getTotalPage());
-        resp.put("list",findSysUserList(sysUser, useCache));
+        resp.put("list",findSysUserList(sysUser, useCache).stream().map(e-> new SysUserResp(e)).collect(Collectors.toList()));
         return resp;
     }
 
@@ -366,27 +399,28 @@ public class SysUserServiceImpl implements ISysUserService{
     @Override
     public JSONObject getPageSysUserExample(QueryExample queryExample,Boolean useCache) throws Exception {
         if(Objects.isNull(queryExample)){
-            throw new Exception("查询参数不能为空");
+            throw new BusiException("查询参数不能为空");
         }
         if(Objects.isNull(queryExample.getPage()) || Objects.isNull(queryExample.getPageSize()) || IConst.PAGE_NO_USE.equals(queryExample.getPage())){
-            throw new Exception("分页请求入参异常");
+            throw new BusiException("分页请求入参异常");
         }
         JSONObject resp = new JSONObject();
         queryExample.setTotal(getTotalSysUser(queryExample, useCache).intValue());
         resp.put("totalPage",queryExample.getTotalPage());
         resp.put("total",queryExample.getTotal());
-        resp.put("list",findSysUserList(queryExample,useCache));
+        resp.put("list",findSysUserList(queryExample,useCache).stream().map(e-> new SysUserResp(e)).collect(Collectors.toList()));
         return resp;
     }
 
     /**
      * 保存记录
      * @param sysUser
+     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysUser(SysUser sysUser) throws Exception {
+    public void saveSysUser(SysUser sysUser,Boolean isFullUpdate) throws Exception {
         if(Objects.isNull(sysUser)){
            return ;
         }
@@ -394,18 +428,19 @@ public class SysUserServiceImpl implements ISysUserService{
             sysUser.setSuId(sysUserRedis.getSysUserId());
             insertSysUser(sysUser);
         }else{
-            updateSysUser(sysUser);
+            updateSysUser(sysUser,isFullUpdate);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysUserList
+     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysUserList(List<SysUser> sysUserList) throws Exception {
+    public void saveSysUserList(List<SysUser> sysUserList,Boolean isFullUpdate) throws Exception {
         if(CollectionUtils.isEmpty(sysUserList)){
             return ;
         }
@@ -419,7 +454,7 @@ public class SysUserServiceImpl implements ISysUserService{
             insertSysUserList(insertList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysUserList(updateList);
+            updateSysUserList(updateList,isFullUpdate);
         }
     }
 }

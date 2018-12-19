@@ -46,17 +46,19 @@ public interface ISysUserService {
     /**
      * 更新对象
      * @param sysUser
+     * @param isFullUpdate
      * @return
      * @throws Exception
      */
-    Integer updateSysUser(SysUser sysUser) throws Exception;
+    Integer updateSysUser(SysUser sysUser,Boolean isFullUpdate) throws Exception;
 
     /**
      * 批量更新
      * @param sysUserList
+     * @param isFullUpdate
      * @throws Exception
      */
-    void updateSysUserList(List<SysUser> sysUserList) throws Exception;
+    void updateSysUserList(List<SysUser> sysUserList,Boolean isFullUpdate) throws Exception;
 
     /**
      * 删除对象
@@ -97,7 +99,7 @@ public interface ISysUserService {
      * @return
      * @throws Exception
      */
-    List<SysUser> findSysUserListByIds(List<Long> list) throws Exception;
+    List<SysUser> findSysUserListByIds(List<Long> list,Boolean useCache) throws Exception;
 
     /**
      * 分页查询列表
@@ -120,15 +122,17 @@ public interface ISysUserService {
     /**
      * 保存记录
      * @param sysUser
+     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysUser(SysUser sysUser) throws Exception;
+     void saveSysUser(SysUser sysUser,Boolean isFullUpdate) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysUserList
+     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysUserList(List<SysUser> sysUserList) throws Exception;
+     void saveSysUserList(List<SysUser> sysUserList,Boolean isFullUpdate) throws Exception;
 }
 

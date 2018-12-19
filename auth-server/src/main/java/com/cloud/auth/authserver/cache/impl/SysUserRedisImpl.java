@@ -1,26 +1,24 @@
 package com.cloud.auth.authserver.cache.impl;
 
+import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
+import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.PostConstruct;
+import org.springframework.data.redis.core.RedisCallback;
+import com.cloud.common.exception.BusiException;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.cloud.auth.authserver.cache.inft.ISysUserRedis;
-import com.cloud.auth.authserver.dao.inft.ISysUserDao;
-import com.cloud.auth.authserver.entity.SysUser;
-import com.cloud.common.complexquery.QueryExample;
+import com.cloud.common.constant.IConst;
 import com.cloud.common.redis.BaseRedis;
 import com.cloud.common.utils.CommonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import com.cloud.common.complexquery.QueryExample;
 import java.util.stream.Collectors;
+import com.cloud.auth.authserver.entity.SysUser;
+import com.cloud.auth.authserver.cache.inft.ISysUserRedis;
+import com.cloud.auth.authserver.dao.inft.ISysUserDao;
 
 /**
  * 缓存实现类 SysUserRedisImpl
@@ -112,7 +110,7 @@ public class SysUserRedisImpl extends BaseRedis<String, SysUser> implements ISys
         } else if(t instanceof QueryExample){
             rsKey = CommonUtil.createExampleRedisKey(JSONObject.parseObject(JSON.toJSONString(t)),isEncrpt,isCountPage);
         }else{
-            throw new Exception("类型不正确");
+            throw new BusiException("类型不正确");
         }
         return rsKey;
     }
@@ -208,6 +206,19 @@ public class SysUserRedisImpl extends BaseRedis<String, SysUser> implements ISys
            put("ids",JSON.toJSONString(ids));
            put("sysUsers",JSON.toJSONString(sysUsers));
         }};
+    }
+
+    /**
+     * 根据id列表获取列表
+     * @param list
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<SysUser> getSysUserListByIds(List<Long> list) throws Exception {
+        List<String> listKeys = list.stream().map(e -> getSysUserKey(e)).collect(Collectors.toList());
+        List<SysUser> sysUsers = listKeys.size() > 0 ? mget(listKeys, SysUser.class) : Collections.emptyList() ;
+        return sysUsers;
     }
 
     /**

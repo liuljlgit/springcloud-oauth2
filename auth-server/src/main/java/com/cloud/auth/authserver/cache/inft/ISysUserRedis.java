@@ -77,6 +77,14 @@ public interface ISysUserRedis {
     <T> JSONObject getSysUserList(T t) throws Exception ;
 
     /**
+     * 根据id列表获取列表
+     * @param list
+     * @return
+     * @throws Exception
+     */
+    List<SysUser> getSysUserListByIds(List<Long> list) throws Exception;
+
+    /**
      * 删除所有redis的值
      * 注意:慎用！！！！
      */

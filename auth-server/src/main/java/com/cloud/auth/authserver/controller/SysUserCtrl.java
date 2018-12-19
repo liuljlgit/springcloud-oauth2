@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.cloud.common.base.BaseController;
 import com.cloud.common.webcomm.ReqEntity;
+import com.cloud.common.exception.BusiException;
 import com.alibaba.fastjson.JSONObject;
 import com.cloud.common.complexquery.QueryExample;
 import java.util.*;
@@ -29,7 +30,7 @@ public class SysUserCtrl extends BaseController {
    @GetMapping(value = "/sysUser/{suId}")
    public String loadSysUserByKey(@PathVariable(value="suId") Long suId) throws Exception {
       if(Objects.isNull(suId)){
-         throw new Exception("请输入要获取的数据的ID") ;
+         throw new BusiException("请输入要获取的数据的ID") ;
       }
       SysUser sysUser = sysUserService.loadSysUserByKey(suId);
       JSONObject resp = new JSONObject();
@@ -47,7 +48,7 @@ public class SysUserCtrl extends BaseController {
        SysUser sysUserReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysUser.class);
        SysUser sysUser = sysUserService.selectOneSysUser(sysUserReq,true);
        if(Objects.isNull(sysUser)){
-           throw new Exception("没有符合条件的记录");
+           throw new BusiException("没有符合条件的记录");
        }
        JSONObject resp = new JSONObject();
        resp.put("sysUser",new SysUserResp(sysUser));
@@ -65,7 +66,7 @@ public class SysUserCtrl extends BaseController {
        QueryExample queryExample = new QueryExample();
        SysUser sysUser = sysUserService.selectOneSysUser(queryExample,true);
        if(Objects.isNull(sysUser)){
-           throw new Exception("没有符合条件的记录");
+           throw new BusiException("没有符合条件的记录");
        }
        JSONObject resp = new JSONObject();
        resp.put("sysUser",new SysUserResp(sysUser));
@@ -105,7 +106,7 @@ public class SysUserCtrl extends BaseController {
    @PostMapping(value = "/sysUser")
    public String saveSysUser(@RequestBody ReqEntity reqEntity) throws  Exception{
        SysUser sysUser = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysUser.class);
-       sysUserService.saveSysUser(sysUser);
+       sysUserService.saveSysUser(sysUser,false);
        return formatResponseParams(EXEC_OK,null);
    }
 
@@ -117,7 +118,7 @@ public class SysUserCtrl extends BaseController {
     @DeleteMapping(value = "/sysUser/{suId}")
     public String deleteSysUserByKey(@PathVariable(value="suId") Long suId) throws  Exception{
         if(Objects.isNull(suId)){
-           throw new Exception("入参请求异常") ;
+           throw new BusiException("入参请求异常") ;
         }
         sysUserService.deleteSysUserByKey(suId);
         return formatResponseParams(EXEC_OK,null);

@@ -14,7 +14,7 @@ public class AuthServerApplicationTests {
 	@Test
 	public void autocode() {
 		//数据库配置
-		GenProperties.URL = "jdbc:mysql://192.168.1.136:3306/oauth2";
+		GenProperties.URL = "jdbc:mysql://192.168.1.139:3306/oauth2";
 		GenProperties.NAME = "root";
 		GenProperties.PASS = "root";
 		GenProperties.DRIVER = "com.mysql.jdbc.Driver";
@@ -28,7 +28,8 @@ public class AuthServerApplicationTests {
 		GenProperties.redisPackageOutPath = "com.cloud.auth.authserver.cache";
 		GenProperties.controllerPackageOutPath = "com.cloud.auth.authserver.controller";
 		GenProperties.respPackageOutPath = "com.cloud.auth.authserver.webentity";
-		GenProperties.xmlPackageOutPath = "mybatis.mapper.authserver";
+		GenProperties.xmlPackageOutPath = "mybatis.mapper.authserver.auto";
+		GenProperties.customXmlPackageOutPath = "mybatis.mapper.authserver.custom";
 		//有一下的模板可供选择。cache_template_v1、cache_template_v2、no_cache_template、sub_table_template、view_template
 		GenProperties.templatePath = "template/cache_template_v2";
 		//运行代码生成
