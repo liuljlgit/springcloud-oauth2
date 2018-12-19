@@ -75,5 +75,23 @@ springcloud oauth2实现：
 8.springcloud的认证流程
     我估计是通过用户名密码验证后,通过JWT协议生成Token（我们会在这个Token的Claims声明部分加入用户名、用户授权信息）,服务器把这个Token保存到数据库或者redis（有期限）,同时返回token给用户。
     用户下次仿真的时候带上access_token,我们验证access_token在我们的数据库或者redis中是否存在,存在则证明已登录。这时可解析Token拿到用户名和用户授权等其他信息。
-
-
+9.认证服务器中的Endpoint?
+    @EnableAuthorizationServer：声明一个认证服务器，当用此注解后，应用启动后将自动生成几个Endpoint,如下:
+    /oauth/authorize：验证
+    /oauth/token：获取token
+    /oauth/confirm_access：用户授权
+    /oauth/error：认证失败
+    /oauth/check_token：资源服务器用来校验token
+    /oauth/token_key：如果jwt模式则可以用此来从认证服务器获取公钥
+10.user-info-uri配置的作用？
+    security:
+      oauth2:
+        client:
+          access-token-uri: http://localhost:8080/uaa/oauth/token
+          user-authorization-uri: http://localhost:8080/uaa/oauth/authorize
+          client-id: webapp
+        resource:
+          user-info-uri: http://localhost:8080/uaa/user
+          prefer-token-info: false
+    简单的说:验证Token并且返回用户信息
+    详细的说:spring在获得token后，必须要调用一下resource.userInfoUri里的接口，看看到底有没有返回值，也就是要验证一下token是不是正确的,这一步是它自动完成的。获得token——调用接口获取user details信息，如果成功了，才算正常。
