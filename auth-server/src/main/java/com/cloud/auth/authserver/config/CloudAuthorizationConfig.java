@@ -1,5 +1,6 @@
 package com.cloud.auth.authserver.config;
 
+import com.cloud.auth.authserver.security.exception.CustomWebResponseExceptionTranslator;
 import com.cloud.auth.authserver.service.inft.UserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -66,6 +67,9 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
     @Qualifier("cloudOauth2RequestFactory")
     private OAuth2RequestFactory requestFacotry;
 
+    @Autowired
+    private CustomWebResponseExceptionTranslator customWebResponseExceptionTranslator;
+
     /**
      * 表示在内存中存储ID为cloud和密码为123456的客户端可以通过密码模式来获取到令牌
      * 也即通过这种方式可以获取令牌:localhost:8080/oauth/token?username=xxx&password=xxx&grant_type=password&client_id=aiqiyi&client_secret=secret
@@ -103,6 +107,8 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
         }
         CompositeTokenGranter tokenGranter = new CompositeTokenGranter(getDefaultTokenGranters(tokenServices,clientDetailsService,requestFacotry));
         endpoints.tokenGranter(tokenGranter);
+        /*加入异常调度器*/
+        endpoints.exceptionTranslator(customWebResponseExceptionTranslator);
     }
 
     /**
@@ -118,7 +124,7 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
      * @return
      */
     private List<TokenGranter> getDefaultTokenGranters(@Qualifier("cloudTokenServices") DefaultTokenServices tokenServices, ClientDetailsService clientDetails, @Qualifier("cloudOauth2RequestFactory") OAuth2RequestFactory requestFactory) {
-        AuthorizationCodeServices authorizationCodeServices = authorizationCodeServices();
+        AuthorizationCodeServices authorizationCodeServices = new InMemoryAuthorizationCodeServices();
         List<TokenGranter> tokenGranters = new ArrayList<>();
         tokenGranters.add(new AuthorizationCodeTokenGranter(tokenServices, authorizationCodeServices, clientDetails, requestFactory));
         tokenGranters.add(new RefreshTokenGranter(tokenServices, clientDetails, requestFactory));
@@ -128,10 +134,6 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
             tokenGranters.add(new ResourceOwnerPasswordTokenGranter(authenticationManager, tokenServices, clientDetails, requestFactory));
         }
         return tokenGranters;
-    }
-
-    private AuthorizationCodeServices authorizationCodeServices() {
-        return new InMemoryAuthorizationCodeServices();
     }
 
     @Override

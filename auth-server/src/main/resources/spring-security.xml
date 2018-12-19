@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xmlns="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+                       	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+	<!-- 资源服务器配置信息 -->
+	<bean id="cloudResourceConfiguration" class="com.cloud.auth.authserver.security.resourceconfig.CloudResourceConfiguration">
+		<property name="antMatchersList" >
+			<!-- 配置免登录可以访问的资源-->
+			<list>
+				<value>/user/validate</value>
+				<value>/authcode/logincode</value>
+				<value>/loginpage/out/**</value>
+				<value>/feign/**</value><!-- 内部服务之间调用前缀-->
+			</list>
+		</property>
+	</bean>
+</beans>

@@ -1,5 +1,6 @@
 package com.cloud.auth.authserver;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @ComponentScan("com.cloud")
+@MapperScan("com.cloud.**.dao.inft")
 public class AuthServerApplication {
 
 	public static void main(String[] args) {

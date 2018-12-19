@@ -50,6 +50,7 @@ public class TokenStoreConfig {
 
     /**
      * jwt转换器
+     * keyPair就是私钥签名（JWT协议中的signature部分）
      * @return
      */
     @Bean(name = "jwtAccessTokenConverter")
