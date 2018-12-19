@@ -60,5 +60,20 @@ springcloud oauth2实现：
 5.咱们springcloud架构单点认证，我们在auth-server中进行认证和授权得到令牌后再去访问其他的微服务，应该是在网关层进行代理验证是否进行登录和是否有相应的微服务权限
 6.我们为什么要设置clientId和resourceId?
     我们可以为每一个Resource Server（一个微服务实例）设置一个resourceid。再给client授权的时候，可以设置这个client可以访问哪一些微服务实例，如果没设置，就是对所有的resource都有访问权限。
-7.
+7.Oauth2和JWT的定义
+    Oauth2是一种授权架构,提供了一套详细的授权机制。Oauth2的最终目的其实就是拿到一个accessToken令牌。而JWT是一种认证协议,其实就是用来生成token的。
+    JWT是一种安全标准。基本思路就是用户提供用户名和密码给认证服务器，服务器验证用户提交信息信息的合法性；如果验证成功，会产生并返回一个Token（令牌），用户可以使用这个token访问服务器上受保护的资源。
+        一个token的例子:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+        token包含三部分:header.claims.signature
+        Header头部分: 头部分简单声明了类型(JWT)以及产生签名所使用的算法.
+            {
+              "alg" : "AES256",
+              "typ" : "JWT"
+            }
+        Claims声明:其实就是token中存放我们需要存放自定义信息,服务器拿到这个Token之后可以再进行解析这些信息。
+        Signature签名: 签名的目的是为了保证上边两部分信息不被篡改。如果尝试使用Bas64对解码后的token进行修改，签名信息就会失效,其实就是用来加密的。就是咱们生成的那个jks文件。
+8.springcloud的认证流程
+    我估计是通过用户名密码验证后,通过JWT协议生成Token（我们会在这个Token的Claims声明部分加入用户名、用户授权信息）,服务器把这个Token保存到数据库或者redis（有期限）,同时返回token给用户。
+    用户下次仿真的时候带上access_token,我们验证access_token在我们的数据库或者redis中是否存在,存在则证明已登录。这时可解析Token拿到用户名和用户授权等其他信息。
+
 
