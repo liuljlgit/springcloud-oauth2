@@ -55,6 +55,11 @@ public class StoreConfig {
         return accessTokenConverter;
     }
 
+    /**
+     * 配置jwt之后需加上这个配置
+     * @param clientDetailsService
+     * @return
+     */
     @Bean("cloudTokenServices")
     @Primary
     public DefaultTokenServices createDefaultTokenServices(ClientDetailsService clientDetailsService) {
