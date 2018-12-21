@@ -31,7 +31,7 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
-        //配置资源ID
+        //配置资源ID,stateless英文单词为:无状态的
         resources.resourceId(RESOURCE_ID).stateless(true);
         //配置未授权返回格式
         resources.authenticationEntryPoint(new AuthExceptionEntryPoint())
