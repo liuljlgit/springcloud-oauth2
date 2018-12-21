@@ -115,3 +115,15 @@ springcloud oauth2实现（配合源码理解）：
           prefer-token-info: false
     简单的说:验证Token并且返回用户信息
     详细的说:spring在获得token后，必须要调用一下resource.userInfoUri里的接口，看看到底有没有返回值，也就是要验证一下token是不是正确的,这一步是它自动完成的。获得token——调用接口获取user details信息，如果成功了，才算正常。
+11.如何使用JwtToken?
+    我们在认证服务器中配置之后在资源服务器（或者gateWay代理中）中也需要配置,否则即使你获取到access_token之后,在资源服务器不进行转换,也是认真不了这个Token的:
+            @Bean(name = "jwtAccessTokenConverter")
+            @ConditionalOnMissingBean
+            public JwtAccessTokenConverter jwtAccessTokenConverter(){
+                JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
+                KeyPair keyPair = new KeyStoreKeyFactory(
+                        new ClassPathResource("keystore.jks"), "123456".toCharArray())
+                        .getKeyPair("oauth2jks");
+                accessTokenConverter.setKeyPair(keyPair);
+                return accessTokenConverter;
+            }
