@@ -1,6 +1,7 @@
 package com.cloud.auth.authserver.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,7 +10,13 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 认证服务器
@@ -23,6 +30,14 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
 
     @Autowired
     TokenStore tokenStore;
+
+    @Autowired(required = false)
+    @Qualifier("jwtAccessTokenConverter")
+    private JwtAccessTokenConverter jwtAccessTokenConverter;
+
+    @Autowired(required = false)
+    @Qualifier("jwtTokenEnhancer")
+    private TokenEnhancer jwtTokenEnhancer;
 
     /**
      * 配置客户端信息
@@ -50,6 +65,16 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
         endpoints.tokenStore(tokenStore)
                 .authenticationManager(authenticationManager)
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
+        //加入jwt增强
+        TokenEnhancerChain tokenEnhancerChain;
+        if ( null != jwtAccessTokenConverter && null != jwtTokenEnhancer){
+            tokenEnhancerChain = new TokenEnhancerChain();
+            List<TokenEnhancer> enhancers = new ArrayList<>();
+            enhancers.add(jwtTokenEnhancer);//这个必须在前面
+            enhancers.add(jwtAccessTokenConverter);
+            tokenEnhancerChain.setTokenEnhancers(enhancers);
+            endpoints.tokenEnhancer(tokenEnhancerChain);
+        }
     }
 
     /**
