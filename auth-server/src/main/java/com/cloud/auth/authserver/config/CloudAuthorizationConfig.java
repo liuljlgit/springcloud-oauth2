@@ -33,7 +33,6 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         String finalSecret = "{bcrypt}" + new BCryptPasswordEncoder().encode("123456");
-
         // 配置两个客户端，一个用于password认证一个用于client认证
         clients.inMemory().withClient("client_1")
                 .resourceIds("client_1")

@@ -1,16 +1,20 @@
 package com.cloud.auth.authserver.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.cloud.auth.authserver.entity.SysUser;
+import com.cloud.auth.authserver.service.inft.ISysUserService;
+import com.cloud.auth.authserver.webentity.SysUserResp;
+import com.cloud.common.base.BaseController;
+import com.cloud.common.complexquery.QueryExample;
+import com.cloud.common.exception.BusiException;
+import com.cloud.common.webcomm.ReqEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.cloud.common.base.BaseController;
-import com.cloud.common.webcomm.ReqEntity;
-import com.cloud.common.exception.BusiException;
-import com.alibaba.fastjson.JSONObject;
-import com.cloud.common.complexquery.QueryExample;
-import java.util.*;
-import com.cloud.auth.authserver.service.inft.ISysUserService;
-import com.cloud.auth.authserver.entity.SysUser;
-import com.cloud.auth.authserver.webentity.SysUserResp;
+
+import java.security.Principal;
+import java.util.Objects;
 
 /**
  * SysUserCtrl 控制层方法
@@ -18,6 +22,8 @@ import com.cloud.auth.authserver.webentity.SysUserResp;
  */
 @RestController
 public class SysUserCtrl extends BaseController {
+
+    private static final Logger logger = LoggerFactory.getLogger(SysUserCtrl.class);
 
     @Autowired
     private ISysUserService sysUserService;
@@ -122,6 +128,15 @@ public class SysUserCtrl extends BaseController {
         }
         sysUserService.deleteSysUserByKey(suId);
         return formatResponseParams(EXEC_OK,null);
+    }
+
+
+    @RequestMapping(value = "/users/current", method = RequestMethod.GET)
+    public Principal getUser(Principal principal) {
+        logger.info(">>>>>>>>>>>>>>>>>>>>>>>>");
+        logger.info(principal.toString());
+        logger.info(">>>>>>>>>>>>>>>>>>>>>>>>");
+        return principal;
     }
 
 
