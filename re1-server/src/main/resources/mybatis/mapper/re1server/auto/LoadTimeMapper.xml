@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.resource.re1server.dao.inft.ILoadTimeDao">
+    <resultMap id="BaseResultMap" type="com.cloud.resource.re1server.entity.LoadTime">
+		<result column="lt_id" jdbcType="BIGINT" property="ltId" />
+		<result column="entity_id" jdbcType="INTEGER" property="entityId" />
+		<result column="start_time" jdbcType="DATE" property="startTime" />
+		<result column="end_time" jdbcType="DATE" property="endTime" />
+		<result column="status" jdbcType="TINYINT" property="status" />
+		<result column="create_time" jdbcType="DATE" property="createTime" />
+		<result column="status_time" jdbcType="DATE" property="statusTime" />
+    </resultMap>
+
+    <sql id="where_sql">
+        and 1=1
+	    <if test="ltId != null">
+	       and lt_id = #{ltId,jdbcType=BIGINT}
+	    </if>
+	    <if test="entityId != null">
+	       and entity_id = #{entityId,jdbcType=INTEGER}
+	    </if>
+	    <if test="startTimeStart != null">
+	       and start_time &gt;= #{startTimeStart,jdbcType=DATE}
+	    </if>
+	    <if test="startTimeEnd != null">
+	       and #{startTimeEnd,jdbcType=DATE} &gt;= start_time
+	    </if>
+	    <if test="endTimeStart != null">
+	       and end_time &gt;= #{endTimeStart,jdbcType=DATE}
+	    </if>
+	    <if test="endTimeEnd != null">
+	       and #{endTimeEnd,jdbcType=DATE} &gt;= end_time
+	    </if>
+	    <if test="status != null">
+	       and status = #{status,jdbcType=TINYINT}
+	    </if>
+	    <if test="createTimeStart != null">
+	       and create_time &gt;= #{createTimeStart,jdbcType=DATE}
+	    </if>
+	    <if test="createTimeEnd != null">
+	       and #{createTimeEnd,jdbcType=DATE} &gt;= create_time
+	    </if>
+	    <if test="statusTimeStart != null">
+	       and status_time &gt;= #{statusTimeStart,jdbcType=DATE}
+	    </if>
+	    <if test="statusTimeEnd != null">
+	       and #{statusTimeEnd,jdbcType=DATE} &gt;= status_time
+	    </if>
+        <if test="inSql != null and inSql.size()>0">
+            <foreach collection="inSql" item="intervalEntity" separator=" ">
+                and ${intervalEntity.name} in
+                <foreach collection="intervalEntity.list" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </foreach>
+        </if>
+        <if test="notInSql != null and notInSql.size()>0">
+            <foreach collection="notInSql" item="intervalEntity" separator=" ">
+                and ${intervalEntity.name} not in
+                <foreach collection="intervalEntity.list" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="Example_Where_Clause">
+      <foreach collection="criterias" item="criteria" separator=" ">
+        <if test="criteria.valid">
+            ${criteria.opt}
+            <trim prefix="(" prefixOverrides="and|or" suffix=")">
+                <foreach collection="criteria.criterions" item="criterion">
+                  <choose>
+                    <when test="criterion.noValue">
+                        ${criterion.condition}
+                    </when>
+                    <when test="criterion.oneValue">
+                        ${criterion.condition} #{criterion.value1}
+                    </when>
+                    <when test="criterion.secondValue">
+                        ${criterion.condition} #{criterion.value1} and #{criterion.value2}
+                    </when>
+                    <when test="criterion.listValue">
+                        ${criterion.condition}
+                      <foreach collection="criterion.list" item="listItem" open="(" close=")" separator=",">
+                        #{listItem}
+                      </foreach>
+                    </when>
+                  </choose>
+                </foreach>
+            </trim>
+        </if>
+      </foreach>
+   </sql>
+
+    <sql id="Base_Column_List">
+        lt_id,entity_id,start_time,end_time,status,
+		create_time,status_time
+    </sql>
+
+    <sql id="Base_Object_List">
+        #{ltId},#{entityId},#{startTime},#{endTime},#{status},
+		#{createTime},#{statusTime}
+    </sql>
+
+    <sql id="Base_Item_List">
+        #{item.ltId},#{item.entityId},#{item.startTime},#{item.endTime},#{item.status},
+		#{item.createTime},#{item.statusTime}
+    </sql>
+
+     <!--获取最大的主键-->
+    <select id="selectMaxLoadTimeId" resultType="java.lang.Long">
+        select IFNULL(max(lt_id), 0) from `load_time`
+    </select>
+
+    <!--根据主键获取对象-->
+    <select id="loadLoadTimeByKey" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from load_time
+        <where>
+            AND lt_id=#{ltId}
+        </where>
+    </select>
+
+    <!--插入对象-->
+    <insert id="insertLoadTime">
+        insert into load_time(<include refid="Base_Column_List" />)
+        values(<include refid="Base_Object_List" />)
+    </insert>
+
+    <!--批量插入对象-->
+    <insert id="insertLoadTimeList">
+        insert into load_time(<include refid="Base_Column_List" />)
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (<include refid="Base_Item_List" />)
+        </foreach>
+    </insert>
+
+    <!--更新对象-->
+    <update id="updateLoadTime">
+        update load_time
+        <set>
+			<if test="entityId != null">
+				entity_id = #{entityId},
+			</if>
+			<if test="startTime != null">
+				start_time = #{startTime},
+			</if>
+			<if test="endTime != null">
+				end_time = #{endTime},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="statusTime != null">
+				status_time = #{statusTime},
+			</if>
+        </set>
+        <where>
+            AND lt_id=#{ltId}
+        </where>
+    </update>
+
+    <!--批量更新对象-->
+    <update id="updateLoadTimeList">
+        <foreach collection="list" separator=";" item="item">
+            update load_time
+            <set>
+				<if test="item.entityId != null">
+					entity_id = #{item.entityId},
+				</if>
+				<if test="item.startTime != null">
+					start_time = #{item.startTime},
+				</if>
+				<if test="item.endTime != null">
+					end_time = #{item.endTime},
+				</if>
+				<if test="item.status != null">
+					status = #{item.status},
+				</if>
+				<if test="item.createTime != null">
+					create_time = #{item.createTime},
+				</if>
+				<if test="item.statusTime != null">
+					status_time = #{item.statusTime},
+				</if>
+            </set>
+            <where>
+                AND lt_id=#{item.ltId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--更新对象:全更新-->
+    <update id="fullUpdateLoadTime">
+        update load_time
+        <set>
+			entity_id = #{entityId},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			status = #{status},
+			create_time = #{createTime},
+			status_time = #{statusTime},
+        </set>
+        <where>
+            AND lt_id=#{ltId}
+        </where>
+    </update>
+
+    <!--批量更新对象:全更新-->
+    <update id="fullUpdateLoadTimeList">
+        <foreach collection="list" separator=";" item="item">
+            update load_time
+            <set>
+				entity_id = #{item.entityId},
+				start_time = #{item.startTime},
+				end_time = #{item.endTime},
+				status = #{item.status},
+				create_time = #{item.createTime},
+				status_time = #{item.statusTime},
+            </set>
+            <where>
+                AND lt_id=#{item.ltId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--查询总数-->
+    <select id="getLoadTimeCount" resultType="java.lang.Long">
+        select count(*) from load_time
+        <where>
+            <include refid="where_sql" />
+        </where>
+    </select>
+
+    <!--查询和分页查询,区别在于page和pageSize是否为空-->
+    <select id="getLoadTimeList" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from load_time
+        <where>
+            <include refid="where_sql" />
+        </where>
+        <if test="page!=null and pageSize!=null and page!=-1" >
+            limit #{index},#{pageSize}
+        </if>
+        <if test="orderByClause!=null and orderByClause!=''">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+    <!--复杂查询获取总数-->
+    <select id="getLoadTimeCountExample" resultType="java.lang.Long">
+        select count(*) from load_time
+        <where>
+            <include refid="Example_Where_Clause" />
+        </where>
+    </select>
+
+    <!--复杂查询查询列表-->
+    <select id="getLoadTimeListExample" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from load_time
+        <where>
+            <include refid="Example_Where_Clause" />
+        </where>
+        <if test="page!=null and pageSize!=null and page!=-1" >
+            limit #{index},#{pageSize}
+        </if>
+        <if test="orderByClause!=null and orderByClause!=''">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+    <!--根据主键删除对象-->
+    <delete id="deleteLoadTimeByKey">
+        delete from load_time
+        <where>
+            AND lt_id = #{ltId}
+        </where>
+    </delete>
+
+    <!-- 批量删除对象 -->
+    <delete id="deleteLoadTimeList">
+        delete from load_time
+        <where>
+            lt_id in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item.ltId}
+            </foreach>
+        </where>
+    </delete>
+
+    <!--根据ID列表获取记录列表-->
+    <select id="findLoadTimeListByIds" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from load_time
+        <where>
+            lt_id in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+</mapper>
+

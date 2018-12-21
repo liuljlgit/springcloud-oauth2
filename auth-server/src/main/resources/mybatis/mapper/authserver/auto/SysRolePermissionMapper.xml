@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.auth.authserver.dao.inft.ISysRolePermissionDao">
+    <resultMap id="BaseResultMap" type="com.cloud.auth.authserver.entity.SysRolePermission">
+		<result column="srp_id" jdbcType="BIGINT" property="srpId" />
+		<result column="sr_id" jdbcType="BIGINT" property="srId" />
+		<result column="sp_id" jdbcType="BIGINT" property="spId" />
+		<result column="create_time" jdbcType="DATE" property="createTime" />
+		<result column="status" jdbcType="TINYINT" property="status" />
+		<result column="status_time" jdbcType="DATE" property="statusTime" />
+    </resultMap>
+
+    <sql id="where_sql">
+        and 1=1
+	    <if test="srpId != null">
+	       and srp_id = #{srpId,jdbcType=BIGINT}
+	    </if>
+	    <if test="srId != null">
+	       and sr_id = #{srId,jdbcType=BIGINT}
+	    </if>
+	    <if test="spId != null">
+	       and sp_id = #{spId,jdbcType=BIGINT}
+	    </if>
+	    <if test="createTimeStart != null">
+	       and create_time &gt;= #{createTimeStart,jdbcType=DATE}
+	    </if>
+	    <if test="createTimeEnd != null">
+	       and #{createTimeEnd,jdbcType=DATE} &gt;= create_time
+	    </if>
+	    <if test="status != null">
+	       and status = #{status,jdbcType=TINYINT}
+	    </if>
+	    <if test="statusTimeStart != null">
+	       and status_time &gt;= #{statusTimeStart,jdbcType=DATE}
+	    </if>
+	    <if test="statusTimeEnd != null">
+	       and #{statusTimeEnd,jdbcType=DATE} &gt;= status_time
+	    </if>
+        <if test="inSql != null and inSql.size()>0">
+            <foreach collection="inSql" item="intervalEntity" separator=" ">
+                and ${intervalEntity.name} in
+                <foreach collection="intervalEntity.list" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </foreach>
+        </if>
+        <if test="notInSql != null and notInSql.size()>0">
+            <foreach collection="notInSql" item="intervalEntity" separator=" ">
+                and ${intervalEntity.name} not in
+                <foreach collection="intervalEntity.list" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="Example_Where_Clause">
+      <foreach collection="criterias" item="criteria" separator=" ">
+        <if test="criteria.valid">
+            ${criteria.opt}
+            <trim prefix="(" prefixOverrides="and|or" suffix=")">
+                <foreach collection="criteria.criterions" item="criterion">
+                  <choose>
+                    <when test="criterion.noValue">
+                        ${criterion.condition}
+                    </when>
+                    <when test="criterion.oneValue">
+                        ${criterion.condition} #{criterion.value1}
+                    </when>
+                    <when test="criterion.secondValue">
+                        ${criterion.condition} #{criterion.value1} and #{criterion.value2}
+                    </when>
+                    <when test="criterion.listValue">
+                        ${criterion.condition}
+                      <foreach collection="criterion.list" item="listItem" open="(" close=")" separator=",">
+                        #{listItem}
+                      </foreach>
+                    </when>
+                  </choose>
+                </foreach>
+            </trim>
+        </if>
+      </foreach>
+   </sql>
+
+    <sql id="Base_Column_List">
+        srp_id,sr_id,sp_id,create_time,status,
+		status_time
+    </sql>
+
+    <sql id="Base_Object_List">
+        #{srpId},#{srId},#{spId},#{createTime},#{status},
+		#{statusTime}
+    </sql>
+
+    <sql id="Base_Item_List">
+        #{item.srpId},#{item.srId},#{item.spId},#{item.createTime},#{item.status},
+		#{item.statusTime}
+    </sql>
+
+     <!--获取最大的主键-->
+    <select id="selectMaxSysRolePermissionId" resultType="java.lang.Long">
+        select IFNULL(max(srp_id), 0) from `sys_role_permission`
+    </select>
+
+    <!--根据主键获取对象-->
+    <select id="loadSysRolePermissionByKey" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_role_permission
+        <where>
+            AND srp_id=#{srpId}
+        </where>
+    </select>
+
+    <!--插入对象-->
+    <insert id="insertSysRolePermission">
+        insert into sys_role_permission(<include refid="Base_Column_List" />)
+        values(<include refid="Base_Object_List" />)
+    </insert>
+
+    <!--批量插入对象-->
+    <insert id="insertSysRolePermissionList">
+        insert into sys_role_permission(<include refid="Base_Column_List" />)
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (<include refid="Base_Item_List" />)
+        </foreach>
+    </insert>
+
+    <!--更新对象-->
+    <update id="updateSysRolePermission">
+        update sys_role_permission
+        <set>
+			<if test="srId != null">
+				sr_id = #{srId},
+			</if>
+			<if test="spId != null">
+				sp_id = #{spId},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="statusTime != null">
+				status_time = #{statusTime},
+			</if>
+        </set>
+        <where>
+            AND srp_id=#{srpId}
+        </where>
+    </update>
+
+    <!--批量更新对象-->
+    <update id="updateSysRolePermissionList">
+        <foreach collection="list" separator=";" item="item">
+            update sys_role_permission
+            <set>
+				<if test="item.srId != null">
+					sr_id = #{item.srId},
+				</if>
+				<if test="item.spId != null">
+					sp_id = #{item.spId},
+				</if>
+				<if test="item.createTime != null">
+					create_time = #{item.createTime},
+				</if>
+				<if test="item.status != null">
+					status = #{item.status},
+				</if>
+				<if test="item.statusTime != null">
+					status_time = #{item.statusTime},
+				</if>
+            </set>
+            <where>
+                AND srp_id=#{item.srpId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--更新对象:全更新-->
+    <update id="fullUpdateSysRolePermission">
+        update sys_role_permission
+        <set>
+			sr_id = #{srId},
+			sp_id = #{spId},
+			create_time = #{createTime},
+			status = #{status},
+			status_time = #{statusTime},
+        </set>
+        <where>
+            AND srp_id=#{srpId}
+        </where>
+    </update>
+
+    <!--批量更新对象:全更新-->
+    <update id="fullUpdateSysRolePermissionList">
+        <foreach collection="list" separator=";" item="item">
+            update sys_role_permission
+            <set>
+				sr_id = #{item.srId},
+				sp_id = #{item.spId},
+				create_time = #{item.createTime},
+				status = #{item.status},
+				status_time = #{item.statusTime},
+            </set>
+            <where>
+                AND srp_id=#{item.srpId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--查询总数-->
+    <select id="getSysRolePermissionCount" resultType="java.lang.Long">
+        select count(*) from sys_role_permission
+        <where>
+            <include refid="where_sql" />
+        </where>
+    </select>
+
+    <!--查询和分页查询,区别在于page和pageSize是否为空-->
+    <select id="getSysRolePermissionList" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_role_permission
+        <where>
+            <include refid="where_sql" />
+        </where>
+        <if test="page!=null and pageSize!=null and page!=-1" >
+            limit #{index},#{pageSize}
+        </if>
+        <if test="orderByClause!=null and orderByClause!=''">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+    <!--复杂查询获取总数-->
+    <select id="getSysRolePermissionCountExample" resultType="java.lang.Long">
+        select count(*) from sys_role_permission
+        <where>
+            <include refid="Example_Where_Clause" />
+        </where>
+    </select>
+
+    <!--复杂查询查询列表-->
+    <select id="getSysRolePermissionListExample" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_role_permission
+        <where>
+            <include refid="Example_Where_Clause" />
+        </where>
+        <if test="page!=null and pageSize!=null and page!=-1" >
+            limit #{index},#{pageSize}
+        </if>
+        <if test="orderByClause!=null and orderByClause!=''">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+    <!--根据主键删除对象-->
+    <delete id="deleteSysRolePermissionByKey">
+        delete from sys_role_permission
+        <where>
+            AND srp_id = #{srpId}
+        </where>
+    </delete>
+
+    <!-- 批量删除对象 -->
+    <delete id="deleteSysRolePermissionList">
+        delete from sys_role_permission
+        <where>
+            srp_id in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item.srpId}
+            </foreach>
+        </where>
+    </delete>
+
+    <!--根据ID列表获取记录列表-->
+    <select id="findSysRolePermissionListByIds" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_role_permission
+        <where>
+            srp_id in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+</mapper>
+

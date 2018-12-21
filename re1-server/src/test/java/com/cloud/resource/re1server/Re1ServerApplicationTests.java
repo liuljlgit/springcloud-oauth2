@@ -19,7 +19,7 @@ public class Re1ServerApplicationTests {
 		GenProperties.PASS = "root";
 		GenProperties.DRIVER = "com.mysql.jdbc.Driver";
 		//表配置:可配置表或者视图（视图仅用来查询,视图不生成缓存，没有主键，只生成查询方法）
-		GenProperties.tablenames = "sys_role";
+		GenProperties.tablenames = "load_time";
 		GenProperties.useCache = Boolean.TRUE;
 		//包路径配置
 		GenProperties.entityPackageOutPath = "com.cloud.resource.re1server.entity";
