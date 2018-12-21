@@ -43,10 +43,22 @@ oauth2原理:
   如果用户访问的时候，客户端的"访问令牌"已经过期，则需要使用"更新令牌"申请一个新的访问令牌
 
 
-springcloud oauth2实现：
+springcloud oauth2实现（配合源码理解）：
 1.使用@EnableResourceServer声明一个资源服务器
+    继承ResourceServerConfigurerAdapter,ResourceServerConfigurerAdapter实现ResourceServerConfigurer两个配置接口,代表资源安全配置和安全规则配置,具体可看源码。
 2.使用@EnableAuthorizationServer声明一个认证服务器
-  注意:资源服务器和认证服务器可在同一个项目中
+    继承自AuthorizationServerConfigurerAdapter,AuthorizationServerConfigurerAdapter实现AuthorizationServerConfigurer包含三种配置:
+        ClientDetailsServiceConfigurer:client客户端的信息配置，可以有in-memory、jdbc等多种读取方式,client信息包括：clientId、secret、scope、authorizedGrantTypes、authorities
+            1) scope:表示权限范围，可选项，用户授权页面时进行选择
+            2) authorizedGrantTypes:有四种授权方式
+                    Authorization Code：用验证获取code，再用code去获取token（用的最多的方式，也是最安全的方式）
+                    Implicit: 隐式授权模式
+                    Client Credentials (用來取得 App Access Token)
+                    Resource Owner Password Credentials
+            3) authorities:授予client的权限
+        AuthorizationServerSecurityConfigurer:声明安全约束，哪些允许访问，哪些不允许访问
+        AuthorizationServerEndpointsConfigurer:声明授权和token的端点以及token的服务的一些配置信息，比如采用什么存储方式、token的有效期等
+
 3.如何通过JDK生成JKS证书？（作用:可以用来生成jwtAccessTokenConverter）
     keytool -genkeypair -alias oauth2jks -keyalg RSA -keypass 123456 -keystore keystore.jks -storepass 123456
     名字和姓氏:liulijun
