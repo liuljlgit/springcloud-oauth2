@@ -31,17 +31,13 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
      */
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        // 配置两个客户端，一个用于password认证一个用于client认证
-        clients.inMemory().withClient("client_1")
-                .authorizedGrantTypes("client_credentials", "refresh_token")
-                .scopes("select")
-                .authorities("oauth2")
+        //配置一个客户端使用password认证,下游服务只需要通过gateway-server进行代理就可以了
+        clients.inMemory().withClient("gateway_client")
                 .secret("123456")
-                .and().withClient("client_2")
+                .accessTokenValiditySeconds(86400) //一天的过期时间
+                .refreshTokenValiditySeconds(100000)
                 .authorizedGrantTypes("password", "refresh_token")
-                .scopes("server")
-                .authorities("oauth2")
-                .secret("123456");
+                .scopes("all");
     }
 
     /**
