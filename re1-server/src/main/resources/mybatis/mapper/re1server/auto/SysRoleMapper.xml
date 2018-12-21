@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloud.resource.re1server.dao.inft.ISysRoleDao">
+    <resultMap id="BaseResultMap" type="com.cloud.resource.re1server.entity.SysRole">
+		<result column="sr_id" jdbcType="BIGINT" property="srId" />
+		<result column="role_name" jdbcType="VARCHAR" property="roleName" />
+		<result column="role_category" jdbcType="TINYINT" property="roleCategory" />
+		<result column="role_type" jdbcType="TINYINT" property="roleType" />
+		<result column="description" jdbcType="VARCHAR" property="description" />
+		<result column="create_time" jdbcType="DATE" property="createTime" />
+		<result column="status" jdbcType="TINYINT" property="status" />
+		<result column="status_time" jdbcType="DATE" property="statusTime" />
+    </resultMap>
+
+    <sql id="where_sql">
+        and 1=1
+	    <if test="srId != null">
+	       and sr_id = #{srId,jdbcType=BIGINT}
+	    </if>
+	    <if test="roleName != null">
+	      <if test="roleNameEqual != null and roleNameEqual">
+	         and role_name = #{roleName,jdbcType=VARCHAR}
+	      </if>
+	      <if test="roleNameEqual != null and not roleNameEqual">
+	         <![CDATA[and role_name like CONCAT('%',#{roleName,jdbcType=VARCHAR} ,'%')]]>
+	      </if>
+	    </if>
+	    <if test="roleCategory != null">
+	       and role_category = #{roleCategory,jdbcType=TINYINT}
+	    </if>
+	    <if test="roleType != null">
+	       and role_type = #{roleType,jdbcType=TINYINT}
+	    </if>
+	    <if test="description != null">
+	      <if test="descriptionEqual != null and descriptionEqual">
+	         and description = #{description,jdbcType=VARCHAR}
+	      </if>
+	      <if test="descriptionEqual != null and not descriptionEqual">
+	         <![CDATA[and description like CONCAT('%',#{description,jdbcType=VARCHAR} ,'%')]]>
+	      </if>
+	    </if>
+	    <if test="createTimeStart != null">
+	       and create_time &gt;= #{createTimeStart,jdbcType=DATE}
+	    </if>
+	    <if test="createTimeEnd != null">
+	       and #{createTimeEnd,jdbcType=DATE} &gt;= create_time
+	    </if>
+	    <if test="status != null">
+	       and status = #{status,jdbcType=TINYINT}
+	    </if>
+	    <if test="statusTimeStart != null">
+	       and status_time &gt;= #{statusTimeStart,jdbcType=DATE}
+	    </if>
+	    <if test="statusTimeEnd != null">
+	       and #{statusTimeEnd,jdbcType=DATE} &gt;= status_time
+	    </if>
+        <if test="inSql != null and inSql.size()>0">
+            <foreach collection="inSql" item="intervalEntity" separator=" ">
+                and ${intervalEntity.name} in
+                <foreach collection="intervalEntity.list" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </foreach>
+        </if>
+        <if test="notInSql != null and notInSql.size()>0">
+            <foreach collection="notInSql" item="intervalEntity" separator=" ">
+                and ${intervalEntity.name} not in
+                <foreach collection="intervalEntity.list" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </foreach>
+        </if>
+    </sql>
+
+    <sql id="Example_Where_Clause">
+      <foreach collection="criterias" item="criteria" separator=" ">
+        <if test="criteria.valid">
+            ${criteria.opt}
+            <trim prefix="(" prefixOverrides="and|or" suffix=")">
+                <foreach collection="criteria.criterions" item="criterion">
+                  <choose>
+                    <when test="criterion.noValue">
+                        ${criterion.condition}
+                    </when>
+                    <when test="criterion.oneValue">
+                        ${criterion.condition} #{criterion.value1}
+                    </when>
+                    <when test="criterion.secondValue">
+                        ${criterion.condition} #{criterion.value1} and #{criterion.value2}
+                    </when>
+                    <when test="criterion.listValue">
+                        ${criterion.condition}
+                      <foreach collection="criterion.list" item="listItem" open="(" close=")" separator=",">
+                        #{listItem}
+                      </foreach>
+                    </when>
+                  </choose>
+                </foreach>
+            </trim>
+        </if>
+      </foreach>
+   </sql>
+
+    <sql id="Base_Column_List">
+        sr_id,role_name,role_category,role_type,description,
+		create_time,status,status_time
+    </sql>
+
+    <sql id="Base_Object_List">
+        #{srId},#{roleName},#{roleCategory},#{roleType},#{description},
+		#{createTime},#{status},#{statusTime}
+    </sql>
+
+    <sql id="Base_Item_List">
+        #{item.srId},#{item.roleName},#{item.roleCategory},#{item.roleType},#{item.description},
+		#{item.createTime},#{item.status},#{item.statusTime}
+    </sql>
+
+     <!--获取最大的主键-->
+    <select id="selectMaxSysRoleId" resultType="java.lang.Long">
+        select IFNULL(max(sr_id), 0) from `sys_role`
+    </select>
+
+    <!--根据主键获取对象-->
+    <select id="loadSysRoleByKey" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_role
+        <where>
+            AND sr_id=#{srId}
+        </where>
+    </select>
+
+    <!--插入对象-->
+    <insert id="insertSysRole">
+        insert into sys_role(<include refid="Base_Column_List" />)
+        values(<include refid="Base_Object_List" />)
+    </insert>
+
+    <!--批量插入对象-->
+    <insert id="insertSysRoleList">
+        insert into sys_role(<include refid="Base_Column_List" />)
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (<include refid="Base_Item_List" />)
+        </foreach>
+    </insert>
+
+    <!--更新对象-->
+    <update id="updateSysRole">
+        update sys_role
+        <set>
+			<if test="roleName != null">
+				role_name = #{roleName},
+			</if>
+			<if test="roleCategory != null">
+				role_category = #{roleCategory},
+			</if>
+			<if test="roleType != null">
+				role_type = #{roleType},
+			</if>
+			<if test="description != null">
+				description = #{description},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="status != null">
+				status = #{status},
+			</if>
+			<if test="statusTime != null">
+				status_time = #{statusTime},
+			</if>
+        </set>
+        <where>
+            AND sr_id=#{srId}
+        </where>
+    </update>
+
+    <!--批量更新对象-->
+    <update id="updateSysRoleList">
+        <foreach collection="list" separator=";" item="item">
+            update sys_role
+            <set>
+				<if test="item.roleName != null">
+					role_name = #{item.roleName},
+				</if>
+				<if test="item.roleCategory != null">
+					role_category = #{item.roleCategory},
+				</if>
+				<if test="item.roleType != null">
+					role_type = #{item.roleType},
+				</if>
+				<if test="item.description != null">
+					description = #{item.description},
+				</if>
+				<if test="item.createTime != null">
+					create_time = #{item.createTime},
+				</if>
+				<if test="item.status != null">
+					status = #{item.status},
+				</if>
+				<if test="item.statusTime != null">
+					status_time = #{item.statusTime},
+				</if>
+            </set>
+            <where>
+                AND sr_id=#{item.srId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--更新对象:全更新-->
+    <update id="fullUpdateSysRole">
+        update sys_role
+        <set>
+			role_name = #{roleName},
+			role_category = #{roleCategory},
+			role_type = #{roleType},
+			description = #{description},
+			create_time = #{createTime},
+			status = #{status},
+			status_time = #{statusTime},
+        </set>
+        <where>
+            AND sr_id=#{srId}
+        </where>
+    </update>
+
+    <!--批量更新对象:全更新-->
+    <update id="fullUpdateSysRoleList">
+        <foreach collection="list" separator=";" item="item">
+            update sys_role
+            <set>
+				role_name = #{item.roleName},
+				role_category = #{item.roleCategory},
+				role_type = #{item.roleType},
+				description = #{item.description},
+				create_time = #{item.createTime},
+				status = #{item.status},
+				status_time = #{item.statusTime},
+            </set>
+            <where>
+                AND sr_id=#{item.srId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--查询总数-->
+    <select id="getSysRoleCount" resultType="java.lang.Long">
+        select count(*) from sys_role
+        <where>
+            <include refid="where_sql" />
+        </where>
+    </select>
+
+    <!--查询和分页查询,区别在于page和pageSize是否为空-->
+    <select id="getSysRoleList" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_role
+        <where>
+            <include refid="where_sql" />
+        </where>
+        <if test="page!=null and pageSize!=null and page!=-1" >
+            limit #{index},#{pageSize}
+        </if>
+        <if test="orderByClause!=null and orderByClause!=''">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+    <!--复杂查询获取总数-->
+    <select id="getSysRoleCountExample" resultType="java.lang.Long">
+        select count(*) from sys_role
+        <where>
+            <include refid="Example_Where_Clause" />
+        </where>
+    </select>
+
+    <!--复杂查询查询列表-->
+    <select id="getSysRoleListExample" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_role
+        <where>
+            <include refid="Example_Where_Clause" />
+        </where>
+        <if test="page!=null and pageSize!=null and page!=-1" >
+            limit #{index},#{pageSize}
+        </if>
+        <if test="orderByClause!=null and orderByClause!=''">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+    <!--根据主键删除对象-->
+    <delete id="deleteSysRoleByKey">
+        delete from sys_role
+        <where>
+            AND sr_id = #{srId}
+        </where>
+    </delete>
+
+    <!-- 批量删除对象 -->
+    <delete id="deleteSysRoleList">
+        delete from sys_role
+        <where>
+            sr_id in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item.srId}
+            </foreach>
+        </where>
+    </delete>
+
+    <!--根据ID列表获取记录列表-->
+    <select id="findSysRoleListByIds" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from sys_role
+        <where>
+            sr_id in
+            <foreach collection="list" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+</mapper>
+

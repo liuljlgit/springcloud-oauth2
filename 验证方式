@@ -1,0 +1,15 @@
+一、先获取access_token（相当于先进行登录）
+POST http://localhost:9001/oauth/token
+Header:
+    Content-Type application/json
+params:
+    username:user_1
+    password:123456
+    grant_type:password
+    scope:server
+    client_id:client_2
+    client_secret:123456
+
+二、获取资源
+GET http://localhost:9002/sysRole/{srId}?access_token=xxxxxxxxxxx
+注意:如果不加access_token，无法获取资源
