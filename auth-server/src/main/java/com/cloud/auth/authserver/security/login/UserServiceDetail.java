@@ -1,4 +1,4 @@
-package com.cloud.auth.authserver.security.service;
+package com.cloud.auth.authserver.security.login;
 
 import com.cloud.auth.authserver.entity.SysRole;
 import com.cloud.auth.authserver.entity.SysUser;

@@ -1,6 +1,6 @@
 package com.cloud.auth.authserver.config;
 
-import com.cloud.auth.authserver.security.service.UserServiceDetail;
+import com.cloud.auth.authserver.security.login.UserServiceDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;

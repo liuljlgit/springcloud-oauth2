@@ -1,6 +1,6 @@
 package com.cloud.auth.authserver.config;
 
-import com.cloud.auth.authserver.security.CloudTokenEnhancer;
+import com.cloud.auth.authserver.security.token.CloudTokenEnhancer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

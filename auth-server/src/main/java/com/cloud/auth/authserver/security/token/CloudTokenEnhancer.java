@@ -1,4 +1,4 @@
-package com.cloud.auth.authserver.security;
+package com.cloud.auth.authserver.security.token;
 
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
