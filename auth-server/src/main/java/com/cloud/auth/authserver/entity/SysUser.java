@@ -40,12 +40,12 @@ public class SysUser extends PageEntity implements Serializable {
 	/**
 	* field comment: 密码 
 	*/
-	private String password;
+	private String passwd;
 
 	/**
 	* field comment: 密码 
 	*/
-	private transient Boolean passwordEqual = Boolean.FALSE;
+	private transient Boolean passwdEqual = Boolean.FALSE;
 
 	/**
 	* field comment: 电话号码 
@@ -152,8 +152,8 @@ public class SysUser extends PageEntity implements Serializable {
 	public static final transient String TABLE_SD_ID = "sd_id";
 	public static final transient String PROP_ACCOUNT = "account";
 	public static final transient String TABLE_ACCOUNT = "account";
-	public static final transient String PROP_PASSWORD = "password";
-	public static final transient String TABLE_PASSWORD = "password";
+	public static final transient String PROP_PASSWD = "passwd";
+	public static final transient String TABLE_PASSWD = "passwd";
 	public static final transient String PROP_PHONE = "phone";
 	public static final transient String TABLE_PHONE = "phone";
 	public static final transient String PROP_EMAIL = "email";
@@ -185,13 +185,13 @@ public class SysUser extends PageEntity implements Serializable {
 
 	public void setAccountEqual(Boolean accountEqual) { this.accountEqual = accountEqual; }
 
-	public String getPassword() { return password; }
+	public String getPasswd() { return passwd; }
 
-	public void setPassword(String password) { this.password = password; }
+	public void setPasswd(String passwd) { this.passwd = passwd; }
 
-	public Boolean getPasswordEqual() { return passwordEqual; }
+	public Boolean getPasswdEqual() { return passwdEqual; }
 
-	public void setPasswordEqual(Boolean passwordEqual) { this.passwordEqual = passwordEqual; }
+	public void setPasswdEqual(Boolean passwdEqual) { this.passwdEqual = passwdEqual; }
 
 	public String getPhone() { return phone; }
 

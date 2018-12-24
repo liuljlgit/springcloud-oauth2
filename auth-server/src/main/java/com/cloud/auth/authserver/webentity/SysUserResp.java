@@ -11,7 +11,7 @@ import com.cloud.auth.authserver.entity.SysUser;
     SysUser.PROP_SU_ID,
 	SysUser.PROP_SD_ID,
 	SysUser.PROP_ACCOUNT,
-	SysUser.PROP_PASSWORD,
+	SysUser.PROP_PASSWD,
 	SysUser.PROP_PHONE,
 	SysUser.PROP_EMAIL,
 	SysUser.PROP_SEX,
