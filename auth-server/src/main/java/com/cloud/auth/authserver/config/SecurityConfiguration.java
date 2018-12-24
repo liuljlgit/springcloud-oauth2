@@ -23,7 +23,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * 配置两个账号密码用户,因为我们自己实现了UserDetailsService,所以不再使用这个
      * @return
      */
-/*    @Bean
+    /*@Bean
     @Override
     protected UserDetailsService userDetailsService() {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();

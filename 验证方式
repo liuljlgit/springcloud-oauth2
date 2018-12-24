@@ -15,5 +15,4 @@ GET http://localhost:9002/sysRole/{srId}?access_token=xxxxxxxxxxx
 注意:如果不加access_token，无法获取资源
 
 任务:
-1.实现数据库的账号名密码校验
-2.使用gateway-server进行代理校验子服务
+1.使用gateway-server进行代理校验子服务
