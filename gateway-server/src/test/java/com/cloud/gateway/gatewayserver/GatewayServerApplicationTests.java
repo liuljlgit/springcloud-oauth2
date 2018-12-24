@@ -1,4 +1,4 @@
-package com.cloud.gatewayserver.gatewayserver;
+package com.cloud.gateway.gatewayserver;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

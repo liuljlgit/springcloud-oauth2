@@ -1,4 +1,4 @@
-package com.cloud.gatewayserver.gatewayserver;
+package com.cloud.gateway.gatewayserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

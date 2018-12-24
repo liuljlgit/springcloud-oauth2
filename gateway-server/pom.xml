@@ -8,11 +8,11 @@
 		<version>2.1.1.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.cloud.gatewayServer</groupId>
+	<groupId>com.cloud.gateway</groupId>
 	<artifactId>gateway-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>gateway-server</name>
-	<description>授权代理</description>
+	<description>使用网关代理鉴权</description>
 
 	<properties>
 		<java.version>1.8</java.version>
