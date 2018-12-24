@@ -1,5 +1,6 @@
 package com.cloud.auth.authserver.config;
 
+import com.cloud.auth.authserver.security.service.UserServiceDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -26,13 +27,17 @@ import java.util.List;
 public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapter {
 
     @Autowired
+    @Qualifier("cloudAuthenticationManager")
     AuthenticationManager authenticationManager;
 
     @Autowired
     TokenStore tokenStore;
 
+    @Autowired
+    UserServiceDetail userServiceDetail;
+
     @Autowired(required = false)
-    @Qualifier("jwtAccessTokenConverter")
+
     private JwtAccessTokenConverter jwtAccessTokenConverter;
 
     @Autowired(required = false)
@@ -64,6 +69,7 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
         endpoints.tokenStore(tokenStore)
                 .authenticationManager(authenticationManager)
+                .userDetailsService(userServiceDetail)
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
         //加入jwt增强
         TokenEnhancerChain tokenEnhancerChain;
