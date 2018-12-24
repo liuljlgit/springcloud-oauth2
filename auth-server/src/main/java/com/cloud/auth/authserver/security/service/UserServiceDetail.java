@@ -48,7 +48,7 @@ public class UserServiceDetail implements UserDetailsService {
             //获取当前用户的权限信息
             sysUserRole.setSuId(userDetails.getSysUser().getSuId());
             List<SysGrantedAuthority> sysRoles = sysUserRoleService.findSysUserRoleList(sysUserRole, true).stream().map(e ->{
-                SysRole r = roleMap.get(e);
+                SysRole r = roleMap.get(e.getSrId());
                 SysGrantedAuthority grantedAuthority = new SysGrantedAuthority(r);
                 return grantedAuthority;
             }).collect(Collectors.toList());
