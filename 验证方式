@@ -7,7 +7,7 @@ params:
     password:123456
     grant_type:password
     scope:all
-    client_id:gateway-server
+    client_id:gateway_client
     client_secret:123456
 
 二、获取资源
