@@ -90,8 +90,7 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
      */
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        // 允许表单认证
-        security.allowFormAuthenticationForClients();
+        security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()").allowFormAuthenticationForClients();
     }
 
 }
