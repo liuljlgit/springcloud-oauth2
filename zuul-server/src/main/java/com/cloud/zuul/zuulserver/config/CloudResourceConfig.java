@@ -34,6 +34,8 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
             .antMatchers("/login").permitAll()
-            .antMatchers("/logout").permitAll();
+            .antMatchers("/logout").permitAll()
+            .anyRequest()
+            .authenticated();
     }
 }
