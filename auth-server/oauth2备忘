@@ -46,6 +46,7 @@ oauth2原理:
 springcloud oauth2实现（配合源码理解）：
 1.使用@EnableResourceServer声明一个资源服务器
     继承ResourceServerConfigurerAdapter,ResourceServerConfigurerAdapter实现ResourceServerConfigurer两个配置接口,代表资源安全配置和安全规则配置,具体可看源码。
+    配置这个注解只会保护本应用服务的资源,他不能保护其他应用的资源。比如在网关应该不能配置保护其他应用的资源。
 2.使用@EnableAuthorizationServer声明一个认证服务器
     继承自AuthorizationServerConfigurerAdapter,AuthorizationServerConfigurerAdapter实现AuthorizationServerConfigurer包含三种配置:
         ClientDetailsServiceConfigurer:client客户端的信息配置，可以有in-memory、jdbc等多种读取方式,client信息包括：clientId、secret、scope、authorizedGrantTypes、authorities
@@ -169,3 +170,4 @@ springcloud oauth2实现（配合源码理解）：
         OAuth在"客户端"与"服务提供商"之间,设置了一个授权层(authorization layer)。"客户端"不能直接登录"服务提供商",只能登录授权层,以此将用户与客户端区分开来。
         配置这个注解的作用是相当于一个这个应用是“客户端”,用来向“授权层”请求授权。
     @EnableOAuth2Sso:这个注解继承了@EnableOAuth2Client,一般用在网关上,代理所有的下级服务。
+
