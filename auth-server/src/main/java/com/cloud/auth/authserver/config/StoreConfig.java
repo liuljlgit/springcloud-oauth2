@@ -1,91 +1,37 @@
 package com.cloud.auth.authserver.config;
 
-import com.cloud.auth.authserver.security.token.CloudTokenEnhancer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import com.cloud.auth.authserver.security.login.LoginAuthenticationProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenEnhancer;
-import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
-import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.security.KeyPair;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 /**
- * token存储配置
+ * PasswordEncoder、AuthenticationManager、LoginAuthenticationProvider、UserServiceDetail是我们登录所需要的
  */
 @Configuration
 public class StoreConfig {
 
-    @Autowired
-    private RedisConnectionFactory redisConnectionFactory;
-
-    /**
-     * token存储
-     * @return
-     */
-    @Bean(name = "tokenStore")
-    public TokenStore getRedisTokenStore(){
-        return new RedisTokenStore(redisConnectionFactory);
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 
-    /**
-     * jwt转换器
-     * keyPair就是私钥签名（JWT协议中的signature部分）
-     * @return
-     */
-    @Bean(name = "jwtAccessTokenConverter")
-    @ConditionalOnMissingBean
-    public JwtAccessTokenConverter jwtAccessTokenConverter(){
-        JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
-        KeyPair keyPair = new KeyStoreKeyFactory(
-                new ClassPathResource("keystore.jks"), "123456".toCharArray())
-                .getKeyPair("o2jks");
-        accessTokenConverter.setKeyPair(keyPair);
-        return accessTokenConverter;
+    @Bean("cloudAuthenticationManager")
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) throws Exception {
+        ProviderManager authenticationManager = new ProviderManager(Arrays.asList(loginAuthenticationProvider(userDetailsService,passwordEncoder)));
+        authenticationManager.setEraseCredentialsAfterAuthentication(false);
+        return authenticationManager;
     }
 
-    /**
-     * 配置jwt之后需加上这个配置
-     * @param clientDetailsService
-     * @return
-     */
-    @Bean("cloudTokenServices")
-    @Primary
-    public DefaultTokenServices createDefaultTokenServices(ClientDetailsService clientDetailsService) {
-        DefaultTokenServices tokenServices = new DefaultTokenServices();
-        tokenServices.setTokenStore(getRedisTokenStore());
-        tokenServices.setSupportRefreshToken(true);
-        tokenServices.setReuseRefreshToken(false);
-        tokenServices.setClientDetailsService(clientDetailsService);
-
-        List<TokenEnhancer> enhancers = new ArrayList<>();
-        enhancers.add(tokenEnhancer());//这个必须在前面
-        enhancers.add(jwtAccessTokenConverter());
-        TokenEnhancerChain tokenEnhancer = new TokenEnhancerChain();
-        tokenEnhancer.setTokenEnhancers(enhancers);
-        tokenServices.setTokenEnhancer(tokenEnhancer);
-        return tokenServices;
-    }
-
-    /**
-     * jwt增强:增加我们自定义的信息
-     * @return
-     */
-    @Bean(name = "jwtTokenEnhancer")
-    @ConditionalOnMissingBean( name = "jwtTokenEnhancer")
-    public TokenEnhancer tokenEnhancer(){
-        return new CloudTokenEnhancer();
+    @Bean
+    public LoginAuthenticationProvider loginAuthenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder){
+        return new LoginAuthenticationProvider(userDetailsService,passwordEncoder);
     }
 
 }
