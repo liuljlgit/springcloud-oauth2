@@ -1,4 +1,5 @@
 一、先获取access_token（相当于先进行登录）
+第一种方式:
 POST http://localhost:9001/oauth/token
 Header:
     Content-Type application/json
@@ -9,6 +10,8 @@ params:
     scope:all
     client_id:gateway_client
     client_secret:123456
+第二种方式:
+    使用restTemplate,封装好参数进行请求
 
 二、获取资源
 GET http://localhost:9002/sysRole/{srId}?access_token=xxxxxxxxxxx
