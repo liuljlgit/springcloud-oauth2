@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
 /**
  * 资源服务器
+ * 注意:只是保护网关的资源
  */
 @Configuration
 @EnableResourceServer
@@ -32,7 +33,7 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-            .antMatchers("/app/access/login").permitAll()
-            .antMatchers("/app/access/logout").permitAll();
+            .antMatchers("/login").permitAll()
+            .antMatchers("/logout").permitAll();
     }
 }
