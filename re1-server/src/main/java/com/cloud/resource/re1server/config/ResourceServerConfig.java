@@ -1,15 +1,8 @@
 package com.cloud.resource.re1server.config;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+public class ResourceServerConfig /*extends ResourceServerConfigurerAdapter*/ {
 
-import javax.servlet.http.HttpServletResponse;
-
-public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
-
-    @Value("${spring.application.name}")
+   /* @Value("${spring.application.name}")
     private String RESOURCE_ID;
 
     @Override
@@ -27,5 +20,5 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
             .anyRequest().authenticated()
             .and()
             .httpBasic();
-    }
+    }*/
 }
