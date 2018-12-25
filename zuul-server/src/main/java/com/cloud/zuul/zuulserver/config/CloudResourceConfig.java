@@ -10,7 +10,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
 /**
- * 资源安全配置
+ * 资源服务器
  */
 @Configuration
 @EnableResourceServer
@@ -32,7 +32,7 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/**").permitAll();
-                //.antMatchers("/**").authenticated(); // 配置访问控制，必须认证后才可以访问
+            .antMatchers("/app/access/login").permitAll()
+            .antMatchers("/app/access/logout").permitAll();
     }
 }
