@@ -10,6 +10,7 @@
 			<!-- 配置免登录可以访问的资源-->
 			<list>
 				<value>/oauth/**</value>
+				<value>/users/register</value>
 			</list>
 		</property>
 	</bean>
