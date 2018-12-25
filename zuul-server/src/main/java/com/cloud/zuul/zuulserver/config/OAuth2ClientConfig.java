@@ -1,4 +1,8 @@
-package com.cloud.resource.re1server.config;
+package com.cloud.zuul.zuulserver.config;
+
+/**
+ * OAuth2 client用来访问被OAuth2保护的资源
+ */
 
 import feign.RequestInterceptor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,9 +15,6 @@ import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 
-/**
- * OAuth2 client用来访问被OAuth2保护的资源
- */
 @EnableOAuth2Client
 @EnableConfigurationProperties
 @Configuration

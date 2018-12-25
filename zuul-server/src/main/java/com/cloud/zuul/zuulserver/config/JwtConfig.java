@@ -1,4 +1,4 @@
-package com.cloud.resource.re1server.config;
+package com.cloud.zuul.zuulserver.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
