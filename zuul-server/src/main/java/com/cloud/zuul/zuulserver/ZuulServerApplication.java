@@ -1,13 +1,13 @@
-package com.cloud.gateway.gatewayserver;
+package com.cloud.zuul.zuulserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GatewayServerApplication {
+public class ZuulServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GatewayServerApplication.class, args);
+		SpringApplication.run(ZuulServerApplication.class, args);
 	}
 
 }

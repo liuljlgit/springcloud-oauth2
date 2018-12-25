@@ -8,11 +8,11 @@
 		<version>2.1.1.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.cloud.gateway</groupId>
-	<artifactId>gateway-server</artifactId>
+	<groupId>com.cloud.zuul</groupId>
+	<artifactId>zuul-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>gateway-server</name>
-	<description>使用网关代理鉴权</description>
+	<name>zuul-server</name>
+	<description>网关代理授权服务</description>
 
 	<properties>
 		<java.version>1.8</java.version>
