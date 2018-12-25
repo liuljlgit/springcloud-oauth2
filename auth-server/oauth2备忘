@@ -98,8 +98,8 @@ springcloud oauth2实现（配合源码理解）：
     用户下次仿真的时候带上access_token,我们验证access_token在我们的数据库或者redis中是否存在,存在则证明已登录。这时可解析Token拿到用户名和用户授权等其他信息。
 9.认证服务器中的Endpoint?
     @EnableAuthorizationServer：声明一个认证服务器，当用此注解后，应用启动后将自动生成几个Endpoint,如下:
-    /oauth/authorize：验证
-    /oauth/token：获取token
+    /oauth/authorize：这个应该是验证用户授权信息的,当我们在方法上使用权限注解的时候应该是调用这个endopint验证的
+    /oauth/token：获取access_token
     /oauth/confirm_access：用户授权
     /oauth/error：认证失败
     /oauth/check_token：资源服务器用来校验token
