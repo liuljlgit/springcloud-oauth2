@@ -30,6 +30,10 @@ public class SysUserDetails implements UserDetails,Serializable {
         this.grantedAuthoritys = grantedAuthoritys;
     }
 
+    public List<SysGrantedAuthority> getGrantedAuthoritys() {
+        return grantedAuthoritys;
+    }
+
     @Override
     public Collection<? extends SysGrantedAuthority> getAuthorities() {
         return this.grantedAuthoritys;
