@@ -1,28 +1,16 @@
 package com.cloud.auth.authserver.config;
 
-import com.cloud.auth.authserver.security.exception.CustomWebResponseExceptionTranslator;
-import com.cloud.auth.authserver.service.inft.UserDetailsService;
+import com.cloud.auth.authserver.security.login.UserServiceDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.CompositeTokenGranter;
-import org.springframework.security.oauth2.provider.OAuth2RequestFactory;
-import org.springframework.security.oauth2.provider.TokenGranter;
-import org.springframework.security.oauth2.provider.client.ClientCredentialsTokenGranter;
-import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
-import org.springframework.security.oauth2.provider.code.AuthorizationCodeTokenGranter;
-import org.springframework.security.oauth2.provider.code.InMemoryAuthorizationCodeServices;
-import org.springframework.security.oauth2.provider.implicit.ImplicitTokenGranter;
-import org.springframework.security.oauth2.provider.password.ResourceOwnerPasswordTokenGranter;
-import org.springframework.security.oauth2.provider.refresh.RefreshTokenGranter;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -40,62 +28,50 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
 
     @Autowired
     @Qualifier("cloudAuthenticationManager")
-    private AuthenticationManager authenticationManager;
+    AuthenticationManager authenticationManager;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    TokenStore tokenStore;
 
     @Autowired
-    private TokenStore tokenStore;
+    UserServiceDetail userServiceDetail;
 
     @Autowired(required = false)
-    @Qualifier("jwtAccessTokenConverter")
+
     private JwtAccessTokenConverter jwtAccessTokenConverter;
 
     @Autowired(required = false)
     @Qualifier("jwtTokenEnhancer")
     private TokenEnhancer jwtTokenEnhancer;
 
-    @Autowired
-    private ClientDetailsService clientDetailsService;
-
-    @Autowired
-    @Qualifier("cloudTokenServices")
-    private DefaultTokenServices tokenServices;
-
-    @Autowired
-    @Qualifier("cloudOauth2RequestFactory")
-    private OAuth2RequestFactory requestFacotry;
-
-    @Autowired
-    private CustomWebResponseExceptionTranslator customWebResponseExceptionTranslator;
-
     /**
-     * 表示在内存中存储ID为cloud和密码为123456的客户端可以通过密码模式来获取到令牌
-     * 也即通过这种方式可以获取令牌:localhost:8080/oauth/token?username=xxx&password=xxx&grant_type=password&client_id=aiqiyi&client_secret=secret
-     * 所以我觉得认证流程应该是这样子的：clientID是cloud的客户端通过账号密码来获取授权码。账号密码通过authenticationManager校验,这个Manager会调用userDetailsService
-     * ID:cloud
-     * 密码:123456
+     * 配置客户端信息
      * @param clients
      * @throws Exception
      */
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory().withClient("cloud")
+        //配置一个客户端使用password认证,下游服务只需要通过gateway-server进行代理就可以了
+        clients.inMemory().withClient("gateway_client")
                 .secret("123456")
-                .accessTokenValiditySeconds(86400)//一天的过期时间
+                .accessTokenValiditySeconds(86400) //一天的过期时间
                 .refreshTokenValiditySeconds(100000)
-                .authorizedGrantTypes("refresh_token","password","mobile")
+                .authorizedGrantTypes("password", "refresh_token")
                 .scopes("all");
-        //.scopes("all","read","write");
     }
 
+    /**
+     * 配置endpoints端点信息
+     * @param endpoints
+     * @throws Exception
+     */
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
         endpoints.tokenStore(tokenStore)
                 .authenticationManager(authenticationManager)
-                .userDetailsService(userDetailsService);
-
+                .userDetailsService(userServiceDetail)
+                .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
+        //加入jwt增强
         TokenEnhancerChain tokenEnhancerChain;
         if ( null != jwtAccessTokenConverter && null != jwtTokenEnhancer){
             tokenEnhancerChain = new TokenEnhancerChain();
@@ -105,41 +81,16 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
             tokenEnhancerChain.setTokenEnhancers(enhancers);
             endpoints.tokenEnhancer(tokenEnhancerChain);
         }
-        CompositeTokenGranter tokenGranter = new CompositeTokenGranter(getDefaultTokenGranters(tokenServices,clientDetailsService,requestFacotry));
-        endpoints.tokenGranter(tokenGranter);
-        /*加入异常调度器*/
-        endpoints.exceptionTranslator(customWebResponseExceptionTranslator);
     }
 
     /**
-     * TokenGranter:令牌授予者
-     * AuthorizationCodeTokenGranter:授权码模式
-     * ClientCredentialsTokenGranter:客户端模式
-     * ImplicitTokenGranter:implicit 模式
-     * RefreshTokenGranter:刷新 token 模式
-     * ResourceOwnerPasswordTokenGranter:密码模式
-     * @param tokenServices
-     * @param clientDetails
-     * @param requestFactory
-     * @return
+     * 配置端点安全约束规则
+     * @param security
+     * @throws Exception
      */
-    private List<TokenGranter> getDefaultTokenGranters(@Qualifier("cloudTokenServices") DefaultTokenServices tokenServices, ClientDetailsService clientDetails, @Qualifier("cloudOauth2RequestFactory") OAuth2RequestFactory requestFactory) {
-        AuthorizationCodeServices authorizationCodeServices = new InMemoryAuthorizationCodeServices();
-        List<TokenGranter> tokenGranters = new ArrayList<>();
-        tokenGranters.add(new AuthorizationCodeTokenGranter(tokenServices, authorizationCodeServices, clientDetails, requestFactory));
-        tokenGranters.add(new RefreshTokenGranter(tokenServices, clientDetails, requestFactory));
-        tokenGranters.add(new ImplicitTokenGranter(tokenServices, clientDetails, requestFactory));
-        tokenGranters.add(new ClientCredentialsTokenGranter(tokenServices, clientDetails, requestFactory));
-        if (authenticationManager != null) {
-            tokenGranters.add(new ResourceOwnerPasswordTokenGranter(authenticationManager, tokenServices, clientDetails, requestFactory));
-        }
-        return tokenGranters;
-    }
-
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
+        security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()").allowFormAuthenticationForClients();
     }
-
 
 }

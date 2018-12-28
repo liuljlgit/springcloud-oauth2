@@ -2,17 +2,16 @@ package com.cloud.auth.authserver.webentity;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
-import com.cloud.auth.authserver.entity.SysUser;
 import com.cloud.common.utils.CommonUtil;
 import com.cloud.common.utils.DateUtil;
-
 import java.util.Date;
+import com.cloud.auth.authserver.entity.SysUser;
 
 @JSONType(includes = {
     SysUser.PROP_SU_ID,
 	SysUser.PROP_SD_ID,
 	SysUser.PROP_ACCOUNT,
-	SysUser.PROP_PASSWORD,
+	SysUser.PROP_PASSWD,
 	SysUser.PROP_PHONE,
 	SysUser.PROP_EMAIL,
 	SysUser.PROP_SEX,

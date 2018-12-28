@@ -1,16 +1,18 @@
 package com.cloud.auth.authserver.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import com.cloud.common.base.BaseController;
-import com.cloud.common.webcomm.ReqEntity;
-import com.cloud.common.exception.BusiException;
 import com.alibaba.fastjson.JSONObject;
-import com.cloud.common.complexquery.QueryExample;
-import java.util.*;
-import com.cloud.auth.authserver.service.inft.ISysUserService;
 import com.cloud.auth.authserver.entity.SysUser;
+import com.cloud.auth.authserver.service.inft.ISysUserService;
 import com.cloud.auth.authserver.webentity.SysUserResp;
+import com.cloud.common.base.BaseController;
+import com.cloud.common.complexquery.QueryExample;
+import com.cloud.common.exception.BusiException;
+import com.cloud.common.webcomm.ReqEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * SysUserCtrl 控制层方法
@@ -21,6 +23,9 @@ public class SysUserCtrl extends BaseController {
 
     @Autowired
     private ISysUserService sysUserService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
    /**
    * SysUser 根据主键获取单个数据
@@ -106,6 +111,7 @@ public class SysUserCtrl extends BaseController {
    @PostMapping(value = "/sysUser")
    public String saveSysUser(@RequestBody ReqEntity reqEntity) throws  Exception{
        SysUser sysUser = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysUser.class);
+       sysUser.setPasswd(passwordEncoder.encode(sysUser.getPasswd()));
        sysUserService.saveSysUser(sysUser,false);
        return formatResponseParams(EXEC_OK,null);
    }

@@ -14,12 +14,12 @@ public class AuthServerApplicationTests {
 	@Test
 	public void autocode() {
 		//数据库配置
-		GenProperties.URL = "jdbc:mysql://192.168.1.139:3306/oauth2";
+		GenProperties.URL = "jdbc:mysql://192.168.1.138:3306/oauth2";
 		GenProperties.NAME = "root";
 		GenProperties.PASS = "root";
 		GenProperties.DRIVER = "com.mysql.jdbc.Driver";
 		//表配置:可配置表或者视图（视图仅用来查询,视图不生成缓存，没有主键，只生成查询方法）
-		GenProperties.tablenames = "sys_user";
+		GenProperties.tablenames = "sys_user,sys_user_role,sys_role_permission,sys_role_menu,sys_role,sys_permission,sys_menu,sys_dept_role,sys_dept,sys_company";
 		GenProperties.useCache = Boolean.TRUE;
 		//包路径配置
 		GenProperties.entityPackageOutPath = "com.cloud.auth.authserver.entity";

@@ -5,7 +5,7 @@
 		<result column="su_id" jdbcType="BIGINT" property="suId" />
 		<result column="sd_id" jdbcType="BIGINT" property="sdId" />
 		<result column="account" jdbcType="VARCHAR" property="account" />
-		<result column="password" jdbcType="VARCHAR" property="password" />
+		<result column="passwd" jdbcType="VARCHAR" property="passwd" />
 		<result column="phone" jdbcType="VARCHAR" property="phone" />
 		<result column="email" jdbcType="VARCHAR" property="email" />
 		<result column="sex" jdbcType="TINYINT" property="sex" />
@@ -31,12 +31,12 @@
 	         <![CDATA[and account like CONCAT('%',#{account,jdbcType=VARCHAR} ,'%')]]>
 	      </if>
 	    </if>
-	    <if test="password != null">
-	      <if test="passwordEqual != null and passwordEqual">
-	         and password = #{password,jdbcType=VARCHAR}
+	    <if test="passwd != null">
+	      <if test="passwdEqual != null and passwdEqual">
+	         and passwd = #{passwd,jdbcType=VARCHAR}
 	      </if>
-	      <if test="passwordEqual != null and not passwordEqual">
-	         <![CDATA[and password like CONCAT('%',#{password,jdbcType=VARCHAR} ,'%')]]>
+	      <if test="passwdEqual != null and not passwdEqual">
+	         <![CDATA[and passwd like CONCAT('%',#{passwd,jdbcType=VARCHAR} ,'%')]]>
 	      </if>
 	    </if>
 	    <if test="phone != null">
@@ -127,19 +127,19 @@
    </sql>
 
     <sql id="Base_Column_List">
-        su_id,sd_id,account,password,phone,
+        su_id,sd_id,account,passwd,phone,
 		email,sex,birthday,create_time,status,
 		status_time
     </sql>
 
     <sql id="Base_Object_List">
-        #{suId},#{sdId},#{account},#{password},#{phone},
+        #{suId},#{sdId},#{account},#{passwd},#{phone},
 		#{email},#{sex},#{birthday},#{createTime},#{status},
 		#{statusTime}
     </sql>
 
     <sql id="Base_Item_List">
-        #{item.suId},#{item.sdId},#{item.account},#{item.password},#{item.phone},
+        #{item.suId},#{item.sdId},#{item.account},#{item.passwd},#{item.phone},
 		#{item.email},#{item.sex},#{item.birthday},#{item.createTime},#{item.status},
 		#{item.statusTime}
     </sql>
@@ -182,8 +182,8 @@
 			<if test="account != null">
 				account = #{account},
 			</if>
-			<if test="password != null">
-				password = #{password},
+			<if test="passwd != null">
+				passwd = #{passwd},
 			</if>
 			<if test="phone != null">
 				phone = #{phone},
@@ -223,8 +223,8 @@
 				<if test="item.account != null">
 					account = #{item.account},
 				</if>
-				<if test="item.password != null">
-					password = #{item.password},
+				<if test="item.passwd != null">
+					passwd = #{item.passwd},
 				</if>
 				<if test="item.phone != null">
 					phone = #{item.phone},
@@ -260,7 +260,7 @@
         <set>
 			sd_id = #{sdId},
 			account = #{account},
-			password = #{password},
+			passwd = #{passwd},
 			phone = #{phone},
 			email = #{email},
 			sex = #{sex},
@@ -281,7 +281,7 @@
             <set>
 				sd_id = #{item.sdId},
 				account = #{item.account},
-				password = #{item.password},
+				passwd = #{item.passwd},
 				phone = #{item.phone},
 				email = #{item.email},
 				sex = #{item.sex},

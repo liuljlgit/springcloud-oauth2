@@ -1,8 +1,9 @@
 package com.cloud.auth.authserver.config;
 
-import com.cloud.auth.authserver.security.resourceconfig.AuthExceptionEntryPoint;
-import com.cloud.auth.authserver.security.resourceconfig.CloudResourceConfiguration;
-import com.cloud.auth.authserver.security.resourceconfig.CustomAccessDeniedHandler;
+
+import com.cloud.auth.authserver.security.resource.AuthExceptionEntryPoint;
+import com.cloud.auth.authserver.security.resource.CloudResourceConfiguration;
+import com.cloud.auth.authserver.security.resource.CustomAccessDeniedHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -13,15 +14,10 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.util.CollectionUtils;
 
-/**
- * 资源服务器
- * 1.我们配置我们的资源ID,同时配置返回没有授权的时候的错误返回格式
- * 2.我们使用spring-security.xml来配置免登陆路径
- */
 @Configuration
 @EnableResourceServer
 @ImportResource(locations = {"classpath*:spring-security.xml"})
-public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
+public class CloudResourceConfig extends ResourceServerConfigurerAdapter{
 
     @Value("${spring.application.name}")
     private String RESOURCE_ID;
@@ -31,13 +27,10 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
-        //配置资源ID,stateless英文单词为:无状态的
         resources.resourceId(RESOURCE_ID).stateless(true);
-        //配置未授权返回格式
         resources.authenticationEntryPoint(new AuthExceptionEntryPoint())
-                .accessDeniedHandler(new CustomAccessDeniedHandler());
+                 .accessDeniedHandler(new CustomAccessDeniedHandler());
     }
-
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -64,5 +57,6 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
                 .and()
                 .httpBasic();
     }
+
 
 }
