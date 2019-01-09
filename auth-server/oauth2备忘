@@ -170,4 +170,5 @@ springcloud oauth2实现（配合源码理解）：
         OAuth在"客户端"与"服务提供商"之间,设置了一个授权层(authorization layer)。"客户端"不能直接登录"服务提供商",只能登录授权层,以此将用户与客户端区分开来。
         配置这个注解的作用是相当于一个这个应用是“客户端”,用来向“授权层”请求授权。
     @EnableOAuth2Sso:这个注解继承了@EnableOAuth2Client,一般用在网关上,代理所有的下级服务。
-
+14.在Endpoint中注入UserDetailsService和AuthenticationManager的作用分别是什么?
+UserDetailsService主要是用来根据用户名获取用户信息的,而AuthenticationManager中需要注入一个loginAuthenticationProvider用来做登录之后的密码校验以及校验之后的工作。
