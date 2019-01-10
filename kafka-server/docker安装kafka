@@ -1,3 +1,4 @@
+dokcer相关知识:具体请参考 有道云笔记->docker->docker搭建kafka
 一、拉取镜像
 docker pull docker.io/wurstmeister/zookeeper	#Kafka依赖Zookeeper为其管理集群信息
 docker pull docker.io/wurstmeister/kafka	 		#kafka
