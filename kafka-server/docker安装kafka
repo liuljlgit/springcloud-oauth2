@@ -1,0 +1,9 @@
+一、拉取镜像
+docker pull docker.io/wurstmeister/zookeeper	#Kafka依赖Zookeeper为其管理集群信息
+docker pull docker.io/wurstmeister/kafka	 		#kafka
+docker pull docker.io/sheepkiller/kafka-manager 	#kafka图形化管理
+
+二、启动容器
+1）docker run -d --name zookeeper -p 2181:2181 -v /etc/localtime:/etc/localtime wurstmeister/zookeeper
+2）docker run -d --name kafka -p 9092:9092 -e KAFKA_BROKER_ID=0 -e KAFKA_ZOOKEEPER_CONNECT=192.168.101.130:2181/kafka -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.101.130:9092 -e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092 -v /etc/localtime:/etc/localtime wurstmeister/kafka
+3）docker run -itd --restart=always --name=kafka-manager -p 9093:9000 -e ZK_HOSTS="192.168.101.130:2181" sheepkiller/kafka-manager
