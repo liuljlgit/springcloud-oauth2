@@ -7,3 +7,35 @@ docker pull docker.io/sheepkiller/kafka-manager 	#kafka图形化管理
 1）docker run -d --name zookeeper -p 2181:2181 -v /etc/localtime:/etc/localtime wurstmeister/zookeeper
 2）docker run -d --name kafka -p 9092:9092 -e KAFKA_BROKER_ID=0 -e KAFKA_ZOOKEEPER_CONNECT=192.168.101.130:2181/kafka -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.101.130:9092 -e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092 -v /etc/localtime:/etc/localtime wurstmeister/kafka
 3）docker run -itd --restart=always --name=kafka-manager -p 9093:9000 -e ZK_HOSTS="192.168.101.130:2181" sheepkiller/kafka-manager
+
+四、向topic发送和消费消息
+cd /opt/kafka_2.12-2.1.0/bin/		#进入脚本目录
+kafka-console-producer.sh --broker-list 192.168.101.130:9092 --topic sun	#启动生产者生产消息
+kafka-console-consumer.sh --bootstrap-server 192.168.101.130:9092 --topic sun --from-beginning	#启动消费者消费消息
+
+五、进入zookeeper查看kafka节点信息
+docker exec -it zookeeper /bin/sh
+cd bin
+./zkCli.sh
+ls / 								#可查看zookeeper根节点下都挂了那些目录
+ls /kafka/brokers/topics/sun/partitions	#可以看到我建立的topic叫sun主题的partitions信息
+get /kafka/brokers/topics/sun 	 		#get命令会显示该节点的节点数据内容和属性信息
+ls2 /kafka/brokers/topics/sun			#ls2命令会显示该节点的子节点信息和属性信息
+
+六、通过命令创建topic
+kafka-topics.sh --create --zookeeper 192.168.101.130:2181/kafka --topic topic_1 --replication-factor 1 --partitions 2
+
+七、删除topic命令
+1）如果server.properties配置文件：delete.topic.enable=true
+可以直接彻底删除该 Topic
+2）如果server.properties配置文件：delete.topic.enable=false
+如果当前 Topic 没有使用过即没有传输过信息：可以彻底删除。
+如果当前 Topic 有使用过即有过传输过信息：并没有真正删除 Topic 只是把这个 Topic 标记为删除(marked for deletion)，重启 Kafka Server 后删除。
+执行命令：
+kafka-topics.sh --delete --zookeeper 192.168.101.130:2181/kafka --topic sun
+
+八、docker kafka数据文件保存的路径
+cd /opt/kafka_2.11-2.0.0/config
+vi service.config
+查看到配置（默认）log.dirs=/kafka/kafka-logs-4eaa3ff7f59d
+
