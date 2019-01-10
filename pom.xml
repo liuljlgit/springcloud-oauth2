@@ -24,6 +24,7 @@
 		<module>zuul-server</module>
 		<module>kafka-server</module>
 		<module>re1-server</module>
+		<module>data-server</module>
 	</modules>
 
 	<properties>
