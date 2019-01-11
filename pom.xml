@@ -23,7 +23,7 @@
 		<module>auth-server</module>
 		<module>zuul-server</module>
 		<module>kafka-server</module>
-		<module>re1-server</module>
+		<module>lcn-server</module>
 		<module>data-server</module>
 	</modules>
 
