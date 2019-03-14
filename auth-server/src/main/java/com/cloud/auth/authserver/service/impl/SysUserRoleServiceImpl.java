@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysUserRoleService;
-import com.cloud.auth.authserver.dao.inft.ISysUserRoleDao;
+import com.cloud.auth.authserver.dao.ISysUserRoleDao;
 import com.cloud.auth.authserver.entity.SysUserRole;
 import com.cloud.auth.authserver.cache.inft.ISysUserRoleRedis;
 import com.cloud.auth.authserver.webentity.SysUserRoleResp;
@@ -85,14 +86,14 @@ public class SysUserRoleServiceImpl implements ISysUserRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysUserRole(SysUserRole sysUserRole) throws Exception {
+    public Integer addSysUserRole(SysUserRole sysUserRole) throws Exception {
         if(Objects.isNull(sysUserRole)){
             return 0;
         }
         if(Objects.isNull(sysUserRole.getSurId())){
             sysUserRole.setSurId(sysUserRoleRedis.getSysUserRoleId());
         }
-        Integer result =  sysUserRoleDao.insertSysUserRole(sysUserRole);
+        Integer result =  sysUserRoleDao.addSysUserRole(sysUserRole);
         sysUserRoleRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysUserRoleServiceImpl implements ISysUserRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysUserRoleList(List<SysUserRole> sysUserRoleList) throws Exception {
+    public void addSysUserRoleList(List<SysUserRole> sysUserRoleList) throws Exception {
         if(CollectionUtils.isEmpty(sysUserRoleList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysUserRoleServiceImpl implements ISysUserRoleService{
                 sysUserRole.setSurId(sysUserRoleRedis.getSysUserRoleId());
             }
         }
-        sysUserRoleDao.insertSysUserRoleList(sysUserRoleList);
+        sysUserRoleDao.addSysUserRoleList(sysUserRoleList);
         sysUserRoleRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysUserRoleServiceImpl implements ISysUserRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysUserRoleByKey(Long surId) throws Exception {
+    public Integer deleteSysUserRole(Long surId) throws Exception {
         if(Objects.isNull(surId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysUserRoleDao.deleteSysUserRoleByKey(surId);
+        Integer result = sysUserRoleDao.deleteSysUserRole(surId);
         sysUserRoleRedis.deleteAllHashSetByPage();
         sysUserRoleRedis.deleteSysUserRole(surId);
         return result;
@@ -190,22 +191,19 @@ public class SysUserRoleServiceImpl implements ISysUserRoleService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysUserRoleList(List<SysUserRole> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysUserRoleList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysUserRole sysUserRole : list) {
-            if(Objects.isNull(sysUserRole.getSurId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysUserRoleRedis.deleteSysUserRole(sysUserRole.getSurId());
+        for (Long id : ids) {
+            sysUserRoleRedis.deleteSysUserRole(id);
         }
-        sysUserRoleDao.deleteSysUserRoleList(list);
+        sysUserRoleDao.deleteSysUserRoleList(ids);
         sysUserRoleRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysUserRoleServiceImpl implements ISysUserRoleService{
         }
         List<SysUserRole> resList;
         if(useCache){
-            resList = sysUserRoleRedis.getSysUserRoleListByIds(list);
-            Map<Long, SysUserRole> sysUserRoleMap = resList.stream().collect(Collectors.toMap(e -> e.getSurId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysUserRoleMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysUserRoleRedis.getSysUserRoleListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSurId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysUserRole> nullObjList = sysUserRoleDao.findSysUserRoleListByIds(nullList);
+                List<SysUserRole> nullObjList = sysUserRoleDao.findSysUserRoleListByIds(nullIds);
                 for(SysUserRole e : nullObjList){
                     sysUserRoleRedis.setSysUserRole(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysUserRoleServiceImpl implements ISysUserRoleService{
     /**
      * 保存记录
      * @param sysUserRole
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysUserRole(SysUserRole sysUserRole,Boolean isFullUpdate) throws Exception {
+    public void saveSysUserRole(SysUserRole sysUserRole) throws Exception {
         if(Objects.isNull(sysUserRole)){
            return ;
         }
         if(Objects.isNull(sysUserRole.getSurId())){
             sysUserRole.setSurId(sysUserRoleRedis.getSysUserRoleId());
-            insertSysUserRole(sysUserRole);
+            addSysUserRole(sysUserRole);
         }else{
-            updateSysUserRole(sysUserRole,isFullUpdate);
+            updateSysUserRole(sysUserRole,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysUserRoleList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysUserRoleList(List<SysUserRole> sysUserRoleList,Boolean isFullUpdate) throws Exception {
+    public void saveSysUserRoleList(List<SysUserRole> sysUserRoleList) throws Exception {
         if(CollectionUtils.isEmpty(sysUserRoleList)){
             return ;
         }
-        List<SysUserRole> insertList = sysUserRoleList.stream().filter(e -> Objects.isNull(e.getSurId())).collect(Collectors.toList());
+        List<SysUserRole> addList = sysUserRoleList.stream().filter(e -> Objects.isNull(e.getSurId())).collect(Collectors.toList());
         List<SysUserRole> updateList = sysUserRoleList.stream().filter(e -> !Objects.isNull(e.getSurId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSurId(sysUserRoleRedis.getSysUserRoleId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysUserRoleList(insertList);
+            addSysUserRoleList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysUserRoleList(updateList,isFullUpdate);
+            updateSysUserRoleList(updateList,false);
         }
     }
 }

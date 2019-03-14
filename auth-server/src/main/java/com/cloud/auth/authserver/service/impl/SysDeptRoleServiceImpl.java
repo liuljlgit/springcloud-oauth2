@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysDeptRoleService;
-import com.cloud.auth.authserver.dao.inft.ISysDeptRoleDao;
+import com.cloud.auth.authserver.dao.ISysDeptRoleDao;
 import com.cloud.auth.authserver.entity.SysDeptRole;
 import com.cloud.auth.authserver.cache.inft.ISysDeptRoleRedis;
 import com.cloud.auth.authserver.webentity.SysDeptRoleResp;
@@ -85,14 +86,14 @@ public class SysDeptRoleServiceImpl implements ISysDeptRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysDeptRole(SysDeptRole sysDeptRole) throws Exception {
+    public Integer addSysDeptRole(SysDeptRole sysDeptRole) throws Exception {
         if(Objects.isNull(sysDeptRole)){
             return 0;
         }
         if(Objects.isNull(sysDeptRole.getSdrId())){
             sysDeptRole.setSdrId(sysDeptRoleRedis.getSysDeptRoleId());
         }
-        Integer result =  sysDeptRoleDao.insertSysDeptRole(sysDeptRole);
+        Integer result =  sysDeptRoleDao.addSysDeptRole(sysDeptRole);
         sysDeptRoleRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysDeptRoleServiceImpl implements ISysDeptRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysDeptRoleList(List<SysDeptRole> sysDeptRoleList) throws Exception {
+    public void addSysDeptRoleList(List<SysDeptRole> sysDeptRoleList) throws Exception {
         if(CollectionUtils.isEmpty(sysDeptRoleList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysDeptRoleServiceImpl implements ISysDeptRoleService{
                 sysDeptRole.setSdrId(sysDeptRoleRedis.getSysDeptRoleId());
             }
         }
-        sysDeptRoleDao.insertSysDeptRoleList(sysDeptRoleList);
+        sysDeptRoleDao.addSysDeptRoleList(sysDeptRoleList);
         sysDeptRoleRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysDeptRoleServiceImpl implements ISysDeptRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysDeptRoleByKey(Long sdrId) throws Exception {
+    public Integer deleteSysDeptRole(Long sdrId) throws Exception {
         if(Objects.isNull(sdrId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysDeptRoleDao.deleteSysDeptRoleByKey(sdrId);
+        Integer result = sysDeptRoleDao.deleteSysDeptRole(sdrId);
         sysDeptRoleRedis.deleteAllHashSetByPage();
         sysDeptRoleRedis.deleteSysDeptRole(sdrId);
         return result;
@@ -190,22 +191,19 @@ public class SysDeptRoleServiceImpl implements ISysDeptRoleService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysDeptRoleList(List<SysDeptRole> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysDeptRoleList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysDeptRole sysDeptRole : list) {
-            if(Objects.isNull(sysDeptRole.getSdrId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysDeptRoleRedis.deleteSysDeptRole(sysDeptRole.getSdrId());
+        for (Long id : ids) {
+            sysDeptRoleRedis.deleteSysDeptRole(id);
         }
-        sysDeptRoleDao.deleteSysDeptRoleList(list);
+        sysDeptRoleDao.deleteSysDeptRoleList(ids);
         sysDeptRoleRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysDeptRoleServiceImpl implements ISysDeptRoleService{
         }
         List<SysDeptRole> resList;
         if(useCache){
-            resList = sysDeptRoleRedis.getSysDeptRoleListByIds(list);
-            Map<Long, SysDeptRole> sysDeptRoleMap = resList.stream().collect(Collectors.toMap(e -> e.getSdrId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysDeptRoleMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysDeptRoleRedis.getSysDeptRoleListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSdrId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysDeptRole> nullObjList = sysDeptRoleDao.findSysDeptRoleListByIds(nullList);
+                List<SysDeptRole> nullObjList = sysDeptRoleDao.findSysDeptRoleListByIds(nullIds);
                 for(SysDeptRole e : nullObjList){
                     sysDeptRoleRedis.setSysDeptRole(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysDeptRoleServiceImpl implements ISysDeptRoleService{
     /**
      * 保存记录
      * @param sysDeptRole
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysDeptRole(SysDeptRole sysDeptRole,Boolean isFullUpdate) throws Exception {
+    public void saveSysDeptRole(SysDeptRole sysDeptRole) throws Exception {
         if(Objects.isNull(sysDeptRole)){
            return ;
         }
         if(Objects.isNull(sysDeptRole.getSdrId())){
             sysDeptRole.setSdrId(sysDeptRoleRedis.getSysDeptRoleId());
-            insertSysDeptRole(sysDeptRole);
+            addSysDeptRole(sysDeptRole);
         }else{
-            updateSysDeptRole(sysDeptRole,isFullUpdate);
+            updateSysDeptRole(sysDeptRole,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysDeptRoleList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysDeptRoleList(List<SysDeptRole> sysDeptRoleList,Boolean isFullUpdate) throws Exception {
+    public void saveSysDeptRoleList(List<SysDeptRole> sysDeptRoleList) throws Exception {
         if(CollectionUtils.isEmpty(sysDeptRoleList)){
             return ;
         }
-        List<SysDeptRole> insertList = sysDeptRoleList.stream().filter(e -> Objects.isNull(e.getSdrId())).collect(Collectors.toList());
+        List<SysDeptRole> addList = sysDeptRoleList.stream().filter(e -> Objects.isNull(e.getSdrId())).collect(Collectors.toList());
         List<SysDeptRole> updateList = sysDeptRoleList.stream().filter(e -> !Objects.isNull(e.getSdrId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSdrId(sysDeptRoleRedis.getSysDeptRoleId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysDeptRoleList(insertList);
+            addSysDeptRoleList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysDeptRoleList(updateList,isFullUpdate);
+            updateSysDeptRoleList(updateList,false);
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.cloud.auth.authserver.dao.inft;
+package com.cloud.auth.authserver.dao;
 
 import java.util.*;
 import org.apache.ibatis.annotations.Param;
@@ -25,13 +25,13 @@ public interface ISysRolePermissionDao {
      * @param sysRolePermission
      * @return
      */
-    Integer insertSysRolePermission(SysRolePermission sysRolePermission);
+    Integer addSysRolePermission(SysRolePermission sysRolePermission);
 
     /**
      * 批量新增对象
      * @param list
      */
-    void insertSysRolePermissionList(List<SysRolePermission> list);
+    void addSysRolePermissionList(List<SysRolePermission> list);
 
     /**
      * 更新对象
@@ -64,13 +64,13 @@ public interface ISysRolePermissionDao {
      * @param srpId
      * @return
      */
-    Integer deleteSysRolePermissionByKey(Long srpId);
+    Integer deleteSysRolePermission(Long srpId);
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      */
-    void deleteSysRolePermissionList(List<SysRolePermission> list);
+    void deleteSysRolePermissionList(List<Long> ids);
 
     /**
      * 查询记录总数

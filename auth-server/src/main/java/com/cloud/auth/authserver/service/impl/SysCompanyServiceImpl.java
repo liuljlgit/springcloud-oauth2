@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysCompanyService;
-import com.cloud.auth.authserver.dao.inft.ISysCompanyDao;
+import com.cloud.auth.authserver.dao.ISysCompanyDao;
 import com.cloud.auth.authserver.entity.SysCompany;
 import com.cloud.auth.authserver.cache.inft.ISysCompanyRedis;
 import com.cloud.auth.authserver.webentity.SysCompanyResp;
@@ -85,14 +86,14 @@ public class SysCompanyServiceImpl implements ISysCompanyService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysCompany(SysCompany sysCompany) throws Exception {
+    public Integer addSysCompany(SysCompany sysCompany) throws Exception {
         if(Objects.isNull(sysCompany)){
             return 0;
         }
         if(Objects.isNull(sysCompany.getScId())){
             sysCompany.setScId(sysCompanyRedis.getSysCompanyId());
         }
-        Integer result =  sysCompanyDao.insertSysCompany(sysCompany);
+        Integer result =  sysCompanyDao.addSysCompany(sysCompany);
         sysCompanyRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysCompanyServiceImpl implements ISysCompanyService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysCompanyList(List<SysCompany> sysCompanyList) throws Exception {
+    public void addSysCompanyList(List<SysCompany> sysCompanyList) throws Exception {
         if(CollectionUtils.isEmpty(sysCompanyList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysCompanyServiceImpl implements ISysCompanyService{
                 sysCompany.setScId(sysCompanyRedis.getSysCompanyId());
             }
         }
-        sysCompanyDao.insertSysCompanyList(sysCompanyList);
+        sysCompanyDao.addSysCompanyList(sysCompanyList);
         sysCompanyRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysCompanyServiceImpl implements ISysCompanyService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysCompanyByKey(Long scId) throws Exception {
+    public Integer deleteSysCompany(Long scId) throws Exception {
         if(Objects.isNull(scId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysCompanyDao.deleteSysCompanyByKey(scId);
+        Integer result = sysCompanyDao.deleteSysCompany(scId);
         sysCompanyRedis.deleteAllHashSetByPage();
         sysCompanyRedis.deleteSysCompany(scId);
         return result;
@@ -190,22 +191,19 @@ public class SysCompanyServiceImpl implements ISysCompanyService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysCompanyList(List<SysCompany> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysCompanyList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysCompany sysCompany : list) {
-            if(Objects.isNull(sysCompany.getScId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysCompanyRedis.deleteSysCompany(sysCompany.getScId());
+        for (Long id : ids) {
+            sysCompanyRedis.deleteSysCompany(id);
         }
-        sysCompanyDao.deleteSysCompanyList(list);
+        sysCompanyDao.deleteSysCompanyList(ids);
         sysCompanyRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysCompanyServiceImpl implements ISysCompanyService{
         }
         List<SysCompany> resList;
         if(useCache){
-            resList = sysCompanyRedis.getSysCompanyListByIds(list);
-            Map<Long, SysCompany> sysCompanyMap = resList.stream().collect(Collectors.toMap(e -> e.getScId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysCompanyMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysCompanyRedis.getSysCompanyListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getScId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysCompany> nullObjList = sysCompanyDao.findSysCompanyListByIds(nullList);
+                List<SysCompany> nullObjList = sysCompanyDao.findSysCompanyListByIds(nullIds);
                 for(SysCompany e : nullObjList){
                     sysCompanyRedis.setSysCompany(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysCompanyServiceImpl implements ISysCompanyService{
     /**
      * 保存记录
      * @param sysCompany
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysCompany(SysCompany sysCompany,Boolean isFullUpdate) throws Exception {
+    public void saveSysCompany(SysCompany sysCompany) throws Exception {
         if(Objects.isNull(sysCompany)){
            return ;
         }
         if(Objects.isNull(sysCompany.getScId())){
             sysCompany.setScId(sysCompanyRedis.getSysCompanyId());
-            insertSysCompany(sysCompany);
+            addSysCompany(sysCompany);
         }else{
-            updateSysCompany(sysCompany,isFullUpdate);
+            updateSysCompany(sysCompany,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysCompanyList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysCompanyList(List<SysCompany> sysCompanyList,Boolean isFullUpdate) throws Exception {
+    public void saveSysCompanyList(List<SysCompany> sysCompanyList) throws Exception {
         if(CollectionUtils.isEmpty(sysCompanyList)){
             return ;
         }
-        List<SysCompany> insertList = sysCompanyList.stream().filter(e -> Objects.isNull(e.getScId())).collect(Collectors.toList());
+        List<SysCompany> addList = sysCompanyList.stream().filter(e -> Objects.isNull(e.getScId())).collect(Collectors.toList());
         List<SysCompany> updateList = sysCompanyList.stream().filter(e -> !Objects.isNull(e.getScId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setScId(sysCompanyRedis.getSysCompanyId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysCompanyList(insertList);
+            addSysCompanyList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysCompanyList(updateList,isFullUpdate);
+            updateSysCompanyList(updateList,false);
         }
     }
 }

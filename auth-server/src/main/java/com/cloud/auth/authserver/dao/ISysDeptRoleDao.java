@@ -1,4 +1,4 @@
-package com.cloud.auth.authserver.dao.inft;
+package com.cloud.auth.authserver.dao;
 
 import java.util.*;
 import org.apache.ibatis.annotations.Param;
@@ -25,13 +25,13 @@ public interface ISysDeptRoleDao {
      * @param sysDeptRole
      * @return
      */
-    Integer insertSysDeptRole(SysDeptRole sysDeptRole);
+    Integer addSysDeptRole(SysDeptRole sysDeptRole);
 
     /**
      * 批量新增对象
      * @param list
      */
-    void insertSysDeptRoleList(List<SysDeptRole> list);
+    void addSysDeptRoleList(List<SysDeptRole> list);
 
     /**
      * 更新对象
@@ -64,13 +64,13 @@ public interface ISysDeptRoleDao {
      * @param sdrId
      * @return
      */
-    Integer deleteSysDeptRoleByKey(Long sdrId);
+    Integer deleteSysDeptRole(Long sdrId);
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      */
-    void deleteSysDeptRoleList(List<SysDeptRole> list);
+    void deleteSysDeptRoleList(List<Long> ids);
 
     /**
      * 查询记录总数

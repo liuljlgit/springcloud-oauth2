@@ -18,7 +18,7 @@ import com.cloud.common.complexquery.QueryExample;
 import java.util.stream.Collectors;
 import com.cloud.auth.authserver.entity.SysDept;
 import com.cloud.auth.authserver.cache.inft.ISysDeptRedis;
-import com.cloud.auth.authserver.dao.inft.ISysDeptDao;
+import com.cloud.auth.authserver.dao.ISysDeptDao;
 
 /**
  * 缓存实现类 SysDeptRedisImpl

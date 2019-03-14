@@ -1,116 +1,116 @@
-package com.cloud.auth.authserver.dao.inft;
+package com.cloud.auth.authserver.dao;
 
 import java.util.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import com.cloud.common.complexquery.QueryExample;
-import com.cloud.auth.authserver.entity.SysMenu;
+import com.cloud.auth.authserver.entity.SysDept;
 
 /**
-  * 接口类 ISysMenuDao
+  * 接口类 ISysDeptDao
   * @author lijun
   */
 @Repository
-public interface ISysMenuDao {
+public interface ISysDeptDao {
 
     /**
      * 根据主键获取对象
-     * @param smId
+     * @param sdId
      * @return
      */
-    SysMenu loadSysMenuByKey(Long smId);
+    SysDept loadSysDeptByKey(Long sdId);
 
     /**
      * 新增对象
-     * @param sysMenu
+     * @param sysDept
      * @return
      */
-    Integer insertSysMenu(SysMenu sysMenu);
+    Integer addSysDept(SysDept sysDept);
 
     /**
      * 批量新增对象
      * @param list
      */
-    void insertSysMenuList(List<SysMenu> list);
+    void addSysDeptList(List<SysDept> list);
 
     /**
      * 更新对象
-     * @param sysMenu
+     * @param sysDept
      * @return
      */
-    Integer updateSysMenu(SysMenu sysMenu);
+    Integer updateSysDept(SysDept sysDept);
 
     /**
      * 更新对象:全更新
-     * @param sysMenu
+     * @param sysDept
      * @return
      */
-    Integer fullUpdateSysMenu(SysMenu sysMenu);
+    Integer fullUpdateSysDept(SysDept sysDept);
 
     /**
      * 批量更新
      * @param list
      */
-    void updateSysMenuList(List<SysMenu> list);
+    void updateSysDeptList(List<SysDept> list);
 
     /**
      * 批量更新:全更新
      * @param list
      */
-    void fullUpdateSysMenuList(List<SysMenu> list);
+    void fullUpdateSysDeptList(List<SysDept> list);
 
     /**
      * 删除对象
-     * @param smId
+     * @param sdId
      * @return
      */
-    Integer deleteSysMenuByKey(Long smId);
+    Integer deleteSysDept(Long sdId);
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      */
-    void deleteSysMenuList(List<SysMenu> list);
+    void deleteSysDeptList(List<Long> ids);
 
     /**
      * 查询记录总数
-     * @param sysMenu
+     * @param sysDept
      * @return
      */
-    Long getSysMenuCount(SysMenu sysMenu);
+    Long getSysDeptCount(SysDept sysDept);
 
     /**
      * 分页查询列表
-     * @param sysMenu
+     * @param sysDept
      * @return
      */
-    List<SysMenu> getSysMenuList(SysMenu sysMenu);
+    List<SysDept> getSysDeptList(SysDept sysDept);
 
     /**
      * 获取表的最大ID
      * @return
      */
-     Long selectMaxSysMenuId();
+     Long selectMaxSysDeptId();
 
     /**
      * 查询记录总数
      * @param queryExample
      * @return
      */
-     Long getSysMenuCountExample(QueryExample queryExample);
+     Long getSysDeptCountExample(QueryExample queryExample);
 
     /**
      * 分页查询列表
      * @param queryExample
      * @return
      */
-     List<SysMenu> getSysMenuListExample(QueryExample queryExample);
+     List<SysDept> getSysDeptListExample(QueryExample queryExample);
 
      /**
       * 根据ID列表从数据库中查询列表
       * @param list
       * @return
       */
-      List<SysMenu> findSysMenuListByIds(List<Long> list);
+      List<SysDept> findSysDeptListByIds(List<Long> list);
 }
 

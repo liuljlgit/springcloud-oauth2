@@ -1,23 +1,23 @@
 package com.cloud.data.dataserver.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import com.cloud.common.base.BaseController;
-import com.cloud.common.webcomm.ReqEntity;
-import com.cloud.common.exception.BusiException;
 import com.alibaba.fastjson.JSONObject;
 import com.cloud.common.complexquery.QueryExample;
-import java.util.*;
-import com.cloud.data.dataserver.service.inft.ILoadTimeService;
+import com.cloud.common.exception.BusiException;
+import com.cloud.common.webcomm.RespEntity;
 import com.cloud.data.dataserver.entity.LoadTime;
+import com.cloud.data.dataserver.service.inft.ILoadTimeService;
 import com.cloud.data.dataserver.webentity.LoadTimeResp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * LoadTimeCtrl 控制层方法
  * @author lijun
  */
 @RestController
-public class LoadTimeCtrl extends BaseController {
+public class LoadTimeCtrl{
 
     @Autowired
     private ILoadTimeService loadTimeService;
@@ -33,9 +33,7 @@ public class LoadTimeCtrl extends BaseController {
          throw new BusiException("请输入要获取的数据的ID") ;
       }
       LoadTime loadTime = loadTimeService.loadLoadTimeByKey(ltId);
-      JSONObject resp = new JSONObject();
-      resp.put("loadTime",new LoadTimeResp(loadTime));
-      return formatResponseParams(EXEC_OK,resp);
+      return RespEntity.ok(new LoadTimeResp(loadTime));
    }
 
    /**
@@ -44,15 +42,13 @@ public class LoadTimeCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/loadTime/selectone")
-   public String selectOneLoadTime(@RequestBody ReqEntity reqEntity) throws Exception {
-       LoadTime loadTimeReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), LoadTime.class);
+   public String selectOneLoadTime(@RequestBody JSONObject reqEntity) throws Exception {
+       LoadTime loadTimeReq = JSONObject.parseObject(reqEntity.toJSONString(), LoadTime.class);
        LoadTime loadTime = loadTimeService.selectOneLoadTime(loadTimeReq,true);
        if(Objects.isNull(loadTime)){
            throw new BusiException("没有符合条件的记录");
        }
-       JSONObject resp = new JSONObject();
-       resp.put("loadTime",new LoadTimeResp(loadTime));
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(new LoadTimeResp(loadTime));
    }
 
    /**
@@ -61,16 +57,14 @@ public class LoadTimeCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/loadTime/criteria/selectone")
-   public String selectOneLoadTimeExample(@RequestBody ReqEntity reqEntity) throws Exception {
-       LoadTime loadTimeReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), LoadTime.class);
+   public String selectOneLoadTimeExample(@RequestBody JSONObject reqEntity) throws Exception {
+       LoadTime loadTimeReq = JSONObject.parseObject(reqEntity.toJSONString(), LoadTime.class);
        QueryExample queryExample = new QueryExample();
        LoadTime loadTime = loadTimeService.selectOneLoadTime(queryExample,true);
        if(Objects.isNull(loadTime)){
            throw new BusiException("没有符合条件的记录");
        }
-       JSONObject resp = new JSONObject();
-       resp.put("loadTime",new LoadTimeResp(loadTime));
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(new LoadTimeResp(loadTime));
    }
 
   /**
@@ -79,10 +73,10 @@ public class LoadTimeCtrl extends BaseController {
    * @throws Exception
    */
    @PostMapping(value = "/loadTime/list")
-   public String getLoadTimeListByPage(@RequestBody ReqEntity reqEntity) throws Exception {
-       LoadTime loadTime = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), LoadTime.class);
+   public String getLoadTimeListByPage(@RequestBody JSONObject reqEntity) throws Exception {
+       LoadTime loadTime = JSONObject.parseObject(reqEntity.toJSONString(), LoadTime.class);
        JSONObject resp = loadTimeService.getPageLoadTime(loadTime,true);
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(resp);
    }
 
    /**
@@ -91,11 +85,11 @@ public class LoadTimeCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/loadTime/criteria/list")
-   public String getLoadTimeListExampleByPage(@RequestBody ReqEntity reqEntity) throws Exception {
-       LoadTime loadTime = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), LoadTime.class);
+   public String getLoadTimeListExampleByPage(@RequestBody JSONObject reqEntity) throws Exception {
+       LoadTime loadTime = JSONObject.parseObject(reqEntity.toJSONString(), LoadTime.class);
        QueryExample queryExample = new QueryExample();
        JSONObject resp = loadTimeService.getPageLoadTimeExample(queryExample,true);
-       return formatResponseParams(EXEC_OK, resp);
+       return RespEntity.ok(resp);
    }
 
   /**
@@ -104,10 +98,10 @@ public class LoadTimeCtrl extends BaseController {
    * @throws Exception
    */
    @PostMapping(value = "/loadTime")
-   public String saveLoadTime(@RequestBody ReqEntity reqEntity) throws  Exception{
-       LoadTime loadTime = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), LoadTime.class);
+   public String saveLoadTime(@RequestBody JSONObject reqEntity) throws  Exception{
+       LoadTime loadTime = JSONObject.parseObject(reqEntity.toJSONString(), LoadTime.class);
        loadTimeService.saveLoadTime(loadTime);
-       return formatResponseParams(EXEC_OK,null);
+       return RespEntity.ok();
    }
 
    /**
@@ -121,7 +115,7 @@ public class LoadTimeCtrl extends BaseController {
            throw new BusiException("入参请求异常") ;
         }
         loadTimeService.deleteLoadTime(ltId);
-        return formatResponseParams(EXEC_OK,null);
+        return RespEntity.ok();
     }
 
 

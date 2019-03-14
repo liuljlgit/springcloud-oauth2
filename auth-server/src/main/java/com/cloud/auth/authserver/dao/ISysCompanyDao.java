@@ -1,116 +1,116 @@
-package com.cloud.auth.authserver.dao.inft;
+package com.cloud.auth.authserver.dao;
 
 import java.util.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import com.cloud.common.complexquery.QueryExample;
-import com.cloud.auth.authserver.entity.SysRole;
+import com.cloud.auth.authserver.entity.SysCompany;
 
 /**
-  * 接口类 ISysRoleDao
+  * 接口类 ISysCompanyDao
   * @author lijun
   */
 @Repository
-public interface ISysRoleDao {
+public interface ISysCompanyDao {
 
     /**
      * 根据主键获取对象
-     * @param srId
+     * @param scId
      * @return
      */
-    SysRole loadSysRoleByKey(Long srId);
+    SysCompany loadSysCompanyByKey(Long scId);
 
     /**
      * 新增对象
-     * @param sysRole
+     * @param sysCompany
      * @return
      */
-    Integer insertSysRole(SysRole sysRole);
+    Integer addSysCompany(SysCompany sysCompany);
 
     /**
      * 批量新增对象
      * @param list
      */
-    void insertSysRoleList(List<SysRole> list);
+    void addSysCompanyList(List<SysCompany> list);
 
     /**
      * 更新对象
-     * @param sysRole
+     * @param sysCompany
      * @return
      */
-    Integer updateSysRole(SysRole sysRole);
+    Integer updateSysCompany(SysCompany sysCompany);
 
     /**
      * 更新对象:全更新
-     * @param sysRole
+     * @param sysCompany
      * @return
      */
-    Integer fullUpdateSysRole(SysRole sysRole);
+    Integer fullUpdateSysCompany(SysCompany sysCompany);
 
     /**
      * 批量更新
      * @param list
      */
-    void updateSysRoleList(List<SysRole> list);
+    void updateSysCompanyList(List<SysCompany> list);
 
     /**
      * 批量更新:全更新
      * @param list
      */
-    void fullUpdateSysRoleList(List<SysRole> list);
+    void fullUpdateSysCompanyList(List<SysCompany> list);
 
     /**
      * 删除对象
-     * @param srId
+     * @param scId
      * @return
      */
-    Integer deleteSysRoleByKey(Long srId);
+    Integer deleteSysCompany(Long scId);
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      */
-    void deleteSysRoleList(List<SysRole> list);
+    void deleteSysCompanyList(List<Long> ids);
 
     /**
      * 查询记录总数
-     * @param sysRole
+     * @param sysCompany
      * @return
      */
-    Long getSysRoleCount(SysRole sysRole);
+    Long getSysCompanyCount(SysCompany sysCompany);
 
     /**
      * 分页查询列表
-     * @param sysRole
+     * @param sysCompany
      * @return
      */
-    List<SysRole> getSysRoleList(SysRole sysRole);
+    List<SysCompany> getSysCompanyList(SysCompany sysCompany);
 
     /**
      * 获取表的最大ID
      * @return
      */
-     Long selectMaxSysRoleId();
+     Long selectMaxSysCompanyId();
 
     /**
      * 查询记录总数
      * @param queryExample
      * @return
      */
-     Long getSysRoleCountExample(QueryExample queryExample);
+     Long getSysCompanyCountExample(QueryExample queryExample);
 
     /**
      * 分页查询列表
      * @param queryExample
      * @return
      */
-     List<SysRole> getSysRoleListExample(QueryExample queryExample);
+     List<SysCompany> getSysCompanyListExample(QueryExample queryExample);
 
      /**
       * 根据ID列表从数据库中查询列表
       * @param list
       * @return
       */
-      List<SysRole> findSysRoleListByIds(List<Long> list);
+      List<SysCompany> findSysCompanyListByIds(List<Long> list);
 }
 

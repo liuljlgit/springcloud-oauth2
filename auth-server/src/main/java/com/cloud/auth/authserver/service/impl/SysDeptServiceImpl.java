@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysDeptService;
-import com.cloud.auth.authserver.dao.inft.ISysDeptDao;
+import com.cloud.auth.authserver.dao.ISysDeptDao;
 import com.cloud.auth.authserver.entity.SysDept;
 import com.cloud.auth.authserver.cache.inft.ISysDeptRedis;
 import com.cloud.auth.authserver.webentity.SysDeptResp;
@@ -85,14 +86,14 @@ public class SysDeptServiceImpl implements ISysDeptService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysDept(SysDept sysDept) throws Exception {
+    public Integer addSysDept(SysDept sysDept) throws Exception {
         if(Objects.isNull(sysDept)){
             return 0;
         }
         if(Objects.isNull(sysDept.getSdId())){
             sysDept.setSdId(sysDeptRedis.getSysDeptId());
         }
-        Integer result =  sysDeptDao.insertSysDept(sysDept);
+        Integer result =  sysDeptDao.addSysDept(sysDept);
         sysDeptRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysDeptServiceImpl implements ISysDeptService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysDeptList(List<SysDept> sysDeptList) throws Exception {
+    public void addSysDeptList(List<SysDept> sysDeptList) throws Exception {
         if(CollectionUtils.isEmpty(sysDeptList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysDeptServiceImpl implements ISysDeptService{
                 sysDept.setSdId(sysDeptRedis.getSysDeptId());
             }
         }
-        sysDeptDao.insertSysDeptList(sysDeptList);
+        sysDeptDao.addSysDeptList(sysDeptList);
         sysDeptRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysDeptServiceImpl implements ISysDeptService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysDeptByKey(Long sdId) throws Exception {
+    public Integer deleteSysDept(Long sdId) throws Exception {
         if(Objects.isNull(sdId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysDeptDao.deleteSysDeptByKey(sdId);
+        Integer result = sysDeptDao.deleteSysDept(sdId);
         sysDeptRedis.deleteAllHashSetByPage();
         sysDeptRedis.deleteSysDept(sdId);
         return result;
@@ -190,22 +191,19 @@ public class SysDeptServiceImpl implements ISysDeptService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysDeptList(List<SysDept> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysDeptList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysDept sysDept : list) {
-            if(Objects.isNull(sysDept.getSdId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysDeptRedis.deleteSysDept(sysDept.getSdId());
+        for (Long id : ids) {
+            sysDeptRedis.deleteSysDept(id);
         }
-        sysDeptDao.deleteSysDeptList(list);
+        sysDeptDao.deleteSysDeptList(ids);
         sysDeptRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysDeptServiceImpl implements ISysDeptService{
         }
         List<SysDept> resList;
         if(useCache){
-            resList = sysDeptRedis.getSysDeptListByIds(list);
-            Map<Long, SysDept> sysDeptMap = resList.stream().collect(Collectors.toMap(e -> e.getSdId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysDeptMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysDeptRedis.getSysDeptListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSdId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysDept> nullObjList = sysDeptDao.findSysDeptListByIds(nullList);
+                List<SysDept> nullObjList = sysDeptDao.findSysDeptListByIds(nullIds);
                 for(SysDept e : nullObjList){
                     sysDeptRedis.setSysDept(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysDeptServiceImpl implements ISysDeptService{
     /**
      * 保存记录
      * @param sysDept
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysDept(SysDept sysDept,Boolean isFullUpdate) throws Exception {
+    public void saveSysDept(SysDept sysDept) throws Exception {
         if(Objects.isNull(sysDept)){
            return ;
         }
         if(Objects.isNull(sysDept.getSdId())){
             sysDept.setSdId(sysDeptRedis.getSysDeptId());
-            insertSysDept(sysDept);
+            addSysDept(sysDept);
         }else{
-            updateSysDept(sysDept,isFullUpdate);
+            updateSysDept(sysDept,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysDeptList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysDeptList(List<SysDept> sysDeptList,Boolean isFullUpdate) throws Exception {
+    public void saveSysDeptList(List<SysDept> sysDeptList) throws Exception {
         if(CollectionUtils.isEmpty(sysDeptList)){
             return ;
         }
-        List<SysDept> insertList = sysDeptList.stream().filter(e -> Objects.isNull(e.getSdId())).collect(Collectors.toList());
+        List<SysDept> addList = sysDeptList.stream().filter(e -> Objects.isNull(e.getSdId())).collect(Collectors.toList());
         List<SysDept> updateList = sysDeptList.stream().filter(e -> !Objects.isNull(e.getSdId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSdId(sysDeptRedis.getSysDeptId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysDeptList(insertList);
+            addSysDeptList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysDeptList(updateList,isFullUpdate);
+            updateSysDeptList(updateList,false);
         }
     }
 }

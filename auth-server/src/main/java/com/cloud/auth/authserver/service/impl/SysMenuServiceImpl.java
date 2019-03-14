@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysMenuService;
-import com.cloud.auth.authserver.dao.inft.ISysMenuDao;
+import com.cloud.auth.authserver.dao.ISysMenuDao;
 import com.cloud.auth.authserver.entity.SysMenu;
 import com.cloud.auth.authserver.cache.inft.ISysMenuRedis;
 import com.cloud.auth.authserver.webentity.SysMenuResp;
@@ -85,14 +86,14 @@ public class SysMenuServiceImpl implements ISysMenuService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysMenu(SysMenu sysMenu) throws Exception {
+    public Integer addSysMenu(SysMenu sysMenu) throws Exception {
         if(Objects.isNull(sysMenu)){
             return 0;
         }
         if(Objects.isNull(sysMenu.getSmId())){
             sysMenu.setSmId(sysMenuRedis.getSysMenuId());
         }
-        Integer result =  sysMenuDao.insertSysMenu(sysMenu);
+        Integer result =  sysMenuDao.addSysMenu(sysMenu);
         sysMenuRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysMenuServiceImpl implements ISysMenuService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysMenuList(List<SysMenu> sysMenuList) throws Exception {
+    public void addSysMenuList(List<SysMenu> sysMenuList) throws Exception {
         if(CollectionUtils.isEmpty(sysMenuList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysMenuServiceImpl implements ISysMenuService{
                 sysMenu.setSmId(sysMenuRedis.getSysMenuId());
             }
         }
-        sysMenuDao.insertSysMenuList(sysMenuList);
+        sysMenuDao.addSysMenuList(sysMenuList);
         sysMenuRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysMenuServiceImpl implements ISysMenuService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysMenuByKey(Long smId) throws Exception {
+    public Integer deleteSysMenu(Long smId) throws Exception {
         if(Objects.isNull(smId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysMenuDao.deleteSysMenuByKey(smId);
+        Integer result = sysMenuDao.deleteSysMenu(smId);
         sysMenuRedis.deleteAllHashSetByPage();
         sysMenuRedis.deleteSysMenu(smId);
         return result;
@@ -190,22 +191,19 @@ public class SysMenuServiceImpl implements ISysMenuService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysMenuList(List<SysMenu> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysMenuList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysMenu sysMenu : list) {
-            if(Objects.isNull(sysMenu.getSmId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysMenuRedis.deleteSysMenu(sysMenu.getSmId());
+        for (Long id : ids) {
+            sysMenuRedis.deleteSysMenu(id);
         }
-        sysMenuDao.deleteSysMenuList(list);
+        sysMenuDao.deleteSysMenuList(ids);
         sysMenuRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysMenuServiceImpl implements ISysMenuService{
         }
         List<SysMenu> resList;
         if(useCache){
-            resList = sysMenuRedis.getSysMenuListByIds(list);
-            Map<Long, SysMenu> sysMenuMap = resList.stream().collect(Collectors.toMap(e -> e.getSmId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysMenuMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysMenuRedis.getSysMenuListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSmId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysMenu> nullObjList = sysMenuDao.findSysMenuListByIds(nullList);
+                List<SysMenu> nullObjList = sysMenuDao.findSysMenuListByIds(nullIds);
                 for(SysMenu e : nullObjList){
                     sysMenuRedis.setSysMenu(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysMenuServiceImpl implements ISysMenuService{
     /**
      * 保存记录
      * @param sysMenu
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysMenu(SysMenu sysMenu,Boolean isFullUpdate) throws Exception {
+    public void saveSysMenu(SysMenu sysMenu) throws Exception {
         if(Objects.isNull(sysMenu)){
            return ;
         }
         if(Objects.isNull(sysMenu.getSmId())){
             sysMenu.setSmId(sysMenuRedis.getSysMenuId());
-            insertSysMenu(sysMenu);
+            addSysMenu(sysMenu);
         }else{
-            updateSysMenu(sysMenu,isFullUpdate);
+            updateSysMenu(sysMenu,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysMenuList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysMenuList(List<SysMenu> sysMenuList,Boolean isFullUpdate) throws Exception {
+    public void saveSysMenuList(List<SysMenu> sysMenuList) throws Exception {
         if(CollectionUtils.isEmpty(sysMenuList)){
             return ;
         }
-        List<SysMenu> insertList = sysMenuList.stream().filter(e -> Objects.isNull(e.getSmId())).collect(Collectors.toList());
+        List<SysMenu> addList = sysMenuList.stream().filter(e -> Objects.isNull(e.getSmId())).collect(Collectors.toList());
         List<SysMenu> updateList = sysMenuList.stream().filter(e -> !Objects.isNull(e.getSmId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSmId(sysMenuRedis.getSysMenuId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysMenuList(insertList);
+            addSysMenuList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysMenuList(updateList,isFullUpdate);
+            updateSysMenuList(updateList,false);
         }
     }
 }

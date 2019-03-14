@@ -18,7 +18,7 @@ import com.cloud.common.complexquery.QueryExample;
 import java.util.stream.Collectors;
 import com.cloud.auth.authserver.entity.SysMenu;
 import com.cloud.auth.authserver.cache.inft.ISysMenuRedis;
-import com.cloud.auth.authserver.dao.inft.ISysMenuDao;
+import com.cloud.auth.authserver.dao.ISysMenuDao;
 
 /**
  * 缓存实现类 SysMenuRedisImpl

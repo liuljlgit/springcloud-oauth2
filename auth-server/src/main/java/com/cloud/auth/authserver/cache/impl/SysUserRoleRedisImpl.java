@@ -18,7 +18,7 @@ import com.cloud.common.complexquery.QueryExample;
 import java.util.stream.Collectors;
 import com.cloud.auth.authserver.entity.SysUserRole;
 import com.cloud.auth.authserver.cache.inft.ISysUserRoleRedis;
-import com.cloud.auth.authserver.dao.inft.ISysUserRoleDao;
+import com.cloud.auth.authserver.dao.ISysUserRoleDao;
 
 /**
  * 缓存实现类 SysUserRoleRedisImpl

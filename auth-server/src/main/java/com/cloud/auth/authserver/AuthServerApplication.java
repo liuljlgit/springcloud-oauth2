@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 @EnableResourceServer
 @EnableEurekaClient
 @ComponentScan("com.cloud")
-@MapperScan("com.cloud.**.dao.inft")
+@MapperScan("com.cloud.**.dao")
 public class AuthServerApplication {
 
 	public static void main(String[] args) {

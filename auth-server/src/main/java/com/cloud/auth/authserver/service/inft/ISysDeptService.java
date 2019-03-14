@@ -34,14 +34,14 @@ public interface ISysDeptService {
      * @return
      * @throws Exception
      */
-    Integer insertSysDept(SysDept sysDept) throws Exception;
+    Integer addSysDept(SysDept sysDept) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysDeptList
      * @throws Exception
      */
-    void insertSysDeptList(List<SysDept> sysDeptList) throws Exception;
+    void addSysDeptList(List<SysDept> sysDeptList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysDeptService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysDeptByKey(Long sdId) throws Exception;
+    Integer deleteSysDept(Long sdId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysDeptList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysDeptList(List<SysDept> sysDeptList) throws Exception;
+    void deleteSysDeptList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysDeptService {
     /**
      * 保存记录
      * @param sysDept
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysDept(SysDept sysDept,Boolean isFullUpdate) throws Exception;
+     void saveSysDept(SysDept sysDept) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysDeptList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysDeptList(List<SysDept> sysDeptList,Boolean isFullUpdate) throws Exception;
+     void saveSysDeptList(List<SysDept> sysDeptList) throws Exception;
 }
 

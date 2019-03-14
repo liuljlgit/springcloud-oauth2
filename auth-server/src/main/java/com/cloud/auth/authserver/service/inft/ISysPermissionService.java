@@ -34,14 +34,14 @@ public interface ISysPermissionService {
      * @return
      * @throws Exception
      */
-    Integer insertSysPermission(SysPermission sysPermission) throws Exception;
+    Integer addSysPermission(SysPermission sysPermission) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysPermissionList
      * @throws Exception
      */
-    void insertSysPermissionList(List<SysPermission> sysPermissionList) throws Exception;
+    void addSysPermissionList(List<SysPermission> sysPermissionList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysPermissionService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysPermissionByKey(Long spId) throws Exception;
+    Integer deleteSysPermission(Long spId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysPermissionList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysPermissionList(List<SysPermission> sysPermissionList) throws Exception;
+    void deleteSysPermissionList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysPermissionService {
     /**
      * 保存记录
      * @param sysPermission
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysPermission(SysPermission sysPermission,Boolean isFullUpdate) throws Exception;
+     void saveSysPermission(SysPermission sysPermission) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysPermissionList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysPermissionList(List<SysPermission> sysPermissionList,Boolean isFullUpdate) throws Exception;
+     void saveSysPermissionList(List<SysPermission> sysPermissionList) throws Exception;
 }
 

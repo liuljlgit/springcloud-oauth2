@@ -2,11 +2,10 @@ package com.cloud.auth.authserver.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.cloud.common.base.BaseController;
-import com.cloud.common.webcomm.ReqEntity;
 import com.cloud.common.exception.BusiException;
 import com.alibaba.fastjson.JSONObject;
 import com.cloud.common.complexquery.QueryExample;
+import com.cloud.common.webcomm.RespEntity;
 import java.util.*;
 import com.cloud.auth.authserver.service.inft.ISysRolePermissionService;
 import com.cloud.auth.authserver.entity.SysRolePermission;
@@ -17,7 +16,7 @@ import com.cloud.auth.authserver.webentity.SysRolePermissionResp;
  * @author lijun
  */
 @RestController
-public class SysRolePermissionCtrl extends BaseController {
+public class SysRolePermissionCtrl{
 
     @Autowired
     private ISysRolePermissionService sysRolePermissionService;
@@ -33,9 +32,7 @@ public class SysRolePermissionCtrl extends BaseController {
          throw new BusiException("请输入要获取的数据的ID") ;
       }
       SysRolePermission sysRolePermission = sysRolePermissionService.loadSysRolePermissionByKey(srpId);
-      JSONObject resp = new JSONObject();
-      resp.put("sysRolePermission",new SysRolePermissionResp(sysRolePermission));
-      return formatResponseParams(EXEC_OK,resp);
+      return RespEntity.ok(new SysRolePermissionResp(sysRolePermission));
    }
 
    /**
@@ -44,15 +41,13 @@ public class SysRolePermissionCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysRolePermission/selectone")
-   public String selectOneSysRolePermission(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysRolePermission sysRolePermissionReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRolePermission.class);
+   public String selectOneSysRolePermission(@RequestBody JSONObject reqEntity) throws Exception {
+       SysRolePermission sysRolePermissionReq = JSONObject.parseObject(reqEntity.toJSONString(), SysRolePermission.class);
        SysRolePermission sysRolePermission = sysRolePermissionService.selectOneSysRolePermission(sysRolePermissionReq,true);
        if(Objects.isNull(sysRolePermission)){
            throw new BusiException("没有符合条件的记录");
        }
-       JSONObject resp = new JSONObject();
-       resp.put("sysRolePermission",new SysRolePermissionResp(sysRolePermission));
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(new SysRolePermissionResp(sysRolePermission));
    }
 
    /**
@@ -61,16 +56,14 @@ public class SysRolePermissionCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysRolePermission/criteria/selectone")
-   public String selectOneSysRolePermissionExample(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysRolePermission sysRolePermissionReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRolePermission.class);
+   public String selectOneSysRolePermissionExample(@RequestBody JSONObject reqEntity) throws Exception {
+       SysRolePermission sysRolePermissionReq = JSONObject.parseObject(reqEntity.toJSONString(), SysRolePermission.class);
        QueryExample queryExample = new QueryExample();
        SysRolePermission sysRolePermission = sysRolePermissionService.selectOneSysRolePermission(queryExample,true);
        if(Objects.isNull(sysRolePermission)){
            throw new BusiException("没有符合条件的记录");
        }
-       JSONObject resp = new JSONObject();
-       resp.put("sysRolePermission",new SysRolePermissionResp(sysRolePermission));
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(new SysRolePermissionResp(sysRolePermission));
    }
 
   /**
@@ -79,10 +72,10 @@ public class SysRolePermissionCtrl extends BaseController {
    * @throws Exception
    */
    @PostMapping(value = "/sysRolePermission/list")
-   public String getSysRolePermissionListByPage(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysRolePermission sysRolePermission = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRolePermission.class);
+   public String getSysRolePermissionListByPage(@RequestBody JSONObject reqEntity) throws Exception {
+       SysRolePermission sysRolePermission = JSONObject.parseObject(reqEntity.toJSONString(), SysRolePermission.class);
        JSONObject resp = sysRolePermissionService.getPageSysRolePermission(sysRolePermission,true);
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(resp);
    }
 
    /**
@@ -91,11 +84,11 @@ public class SysRolePermissionCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysRolePermission/criteria/list")
-   public String getSysRolePermissionListExampleByPage(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysRolePermission sysRolePermission = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRolePermission.class);
+   public String getSysRolePermissionListExampleByPage(@RequestBody JSONObject reqEntity) throws Exception {
+       SysRolePermission sysRolePermission = JSONObject.parseObject(reqEntity.toJSONString(), SysRolePermission.class);
        QueryExample queryExample = new QueryExample();
        JSONObject resp = sysRolePermissionService.getPageSysRolePermissionExample(queryExample,true);
-       return formatResponseParams(EXEC_OK, resp);
+       return RespEntity.ok(resp);
    }
 
   /**
@@ -104,10 +97,10 @@ public class SysRolePermissionCtrl extends BaseController {
    * @throws Exception
    */
    @PostMapping(value = "/sysRolePermission")
-   public String saveSysRolePermission(@RequestBody ReqEntity reqEntity) throws  Exception{
-       SysRolePermission sysRolePermission = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRolePermission.class);
-       sysRolePermissionService.saveSysRolePermission(sysRolePermission,false);
-       return formatResponseParams(EXEC_OK,null);
+   public String saveSysRolePermission(@RequestBody JSONObject reqEntity) throws  Exception{
+       SysRolePermission sysRolePermission = JSONObject.parseObject(reqEntity.toJSONString(), SysRolePermission.class);
+       sysRolePermissionService.saveSysRolePermission(sysRolePermission);
+       return RespEntity.ok();
    }
 
    /**
@@ -116,12 +109,12 @@ public class SysRolePermissionCtrl extends BaseController {
     * @throws Exception
     */
     @DeleteMapping(value = "/sysRolePermission/{srpId}")
-    public String deleteSysRolePermissionByKey(@PathVariable(value="srpId") Long srpId) throws  Exception{
+    public String deleteSysRolePermission(@PathVariable(value="srpId") Long srpId) throws  Exception{
         if(Objects.isNull(srpId)){
            throw new BusiException("入参请求异常") ;
         }
-        sysRolePermissionService.deleteSysRolePermissionByKey(srpId);
-        return formatResponseParams(EXEC_OK,null);
+        sysRolePermissionService.deleteSysRolePermission(srpId);
+        return RespEntity.ok();
     }
 
 

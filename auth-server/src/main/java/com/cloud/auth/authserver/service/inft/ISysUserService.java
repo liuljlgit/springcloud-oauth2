@@ -34,14 +34,14 @@ public interface ISysUserService {
      * @return
      * @throws Exception
      */
-    Integer insertSysUser(SysUser sysUser) throws Exception;
+    Integer addSysUser(SysUser sysUser) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysUserList
      * @throws Exception
      */
-    void insertSysUserList(List<SysUser> sysUserList) throws Exception;
+    void addSysUserList(List<SysUser> sysUserList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysUserService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysUserByKey(Long suId) throws Exception;
+    Integer deleteSysUser(Long suId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysUserList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysUserList(List<SysUser> sysUserList) throws Exception;
+    void deleteSysUserList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysUserService {
     /**
      * 保存记录
      * @param sysUser
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysUser(SysUser sysUser,Boolean isFullUpdate) throws Exception;
+     void saveSysUser(SysUser sysUser) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysUserList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysUserList(List<SysUser> sysUserList,Boolean isFullUpdate) throws Exception;
+     void saveSysUserList(List<SysUser> sysUserList) throws Exception;
 }
 

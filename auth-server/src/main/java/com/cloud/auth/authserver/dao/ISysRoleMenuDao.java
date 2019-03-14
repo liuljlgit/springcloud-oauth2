@@ -1,4 +1,4 @@
-package com.cloud.auth.authserver.dao.inft;
+package com.cloud.auth.authserver.dao;
 
 import java.util.*;
 import org.apache.ibatis.annotations.Param;
@@ -25,13 +25,13 @@ public interface ISysRoleMenuDao {
      * @param sysRoleMenu
      * @return
      */
-    Integer insertSysRoleMenu(SysRoleMenu sysRoleMenu);
+    Integer addSysRoleMenu(SysRoleMenu sysRoleMenu);
 
     /**
      * 批量新增对象
      * @param list
      */
-    void insertSysRoleMenuList(List<SysRoleMenu> list);
+    void addSysRoleMenuList(List<SysRoleMenu> list);
 
     /**
      * 更新对象
@@ -64,13 +64,13 @@ public interface ISysRoleMenuDao {
      * @param srmId
      * @return
      */
-    Integer deleteSysRoleMenuByKey(Long srmId);
+    Integer deleteSysRoleMenu(Long srmId);
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      */
-    void deleteSysRoleMenuList(List<SysRoleMenu> list);
+    void deleteSysRoleMenuList(List<Long> ids);
 
     /**
      * 查询记录总数

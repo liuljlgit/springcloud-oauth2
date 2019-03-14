@@ -1,116 +1,116 @@
-package com.cloud.auth.authserver.dao.inft;
+package com.cloud.auth.authserver.dao;
 
 import java.util.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import com.cloud.common.complexquery.QueryExample;
-import com.cloud.auth.authserver.entity.SysDept;
+import com.cloud.auth.authserver.entity.SysRole;
 
 /**
-  * 接口类 ISysDeptDao
+  * 接口类 ISysRoleDao
   * @author lijun
   */
 @Repository
-public interface ISysDeptDao {
+public interface ISysRoleDao {
 
     /**
      * 根据主键获取对象
-     * @param sdId
+     * @param srId
      * @return
      */
-    SysDept loadSysDeptByKey(Long sdId);
+    SysRole loadSysRoleByKey(Long srId);
 
     /**
      * 新增对象
-     * @param sysDept
+     * @param sysRole
      * @return
      */
-    Integer insertSysDept(SysDept sysDept);
+    Integer addSysRole(SysRole sysRole);
 
     /**
      * 批量新增对象
      * @param list
      */
-    void insertSysDeptList(List<SysDept> list);
+    void addSysRoleList(List<SysRole> list);
 
     /**
      * 更新对象
-     * @param sysDept
+     * @param sysRole
      * @return
      */
-    Integer updateSysDept(SysDept sysDept);
+    Integer updateSysRole(SysRole sysRole);
 
     /**
      * 更新对象:全更新
-     * @param sysDept
+     * @param sysRole
      * @return
      */
-    Integer fullUpdateSysDept(SysDept sysDept);
+    Integer fullUpdateSysRole(SysRole sysRole);
 
     /**
      * 批量更新
      * @param list
      */
-    void updateSysDeptList(List<SysDept> list);
+    void updateSysRoleList(List<SysRole> list);
 
     /**
      * 批量更新:全更新
      * @param list
      */
-    void fullUpdateSysDeptList(List<SysDept> list);
+    void fullUpdateSysRoleList(List<SysRole> list);
 
     /**
      * 删除对象
-     * @param sdId
+     * @param srId
      * @return
      */
-    Integer deleteSysDeptByKey(Long sdId);
+    Integer deleteSysRole(Long srId);
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      */
-    void deleteSysDeptList(List<SysDept> list);
+    void deleteSysRoleList(List<Long> ids);
 
     /**
      * 查询记录总数
-     * @param sysDept
+     * @param sysRole
      * @return
      */
-    Long getSysDeptCount(SysDept sysDept);
+    Long getSysRoleCount(SysRole sysRole);
 
     /**
      * 分页查询列表
-     * @param sysDept
+     * @param sysRole
      * @return
      */
-    List<SysDept> getSysDeptList(SysDept sysDept);
+    List<SysRole> getSysRoleList(SysRole sysRole);
 
     /**
      * 获取表的最大ID
      * @return
      */
-     Long selectMaxSysDeptId();
+     Long selectMaxSysRoleId();
 
     /**
      * 查询记录总数
      * @param queryExample
      * @return
      */
-     Long getSysDeptCountExample(QueryExample queryExample);
+     Long getSysRoleCountExample(QueryExample queryExample);
 
     /**
      * 分页查询列表
      * @param queryExample
      * @return
      */
-     List<SysDept> getSysDeptListExample(QueryExample queryExample);
+     List<SysRole> getSysRoleListExample(QueryExample queryExample);
 
      /**
       * 根据ID列表从数据库中查询列表
       * @param list
       * @return
       */
-      List<SysDept> findSysDeptListByIds(List<Long> list);
+      List<SysRole> findSysRoleListByIds(List<Long> list);
 }
 

@@ -34,14 +34,14 @@ public interface ISysMenuService {
      * @return
      * @throws Exception
      */
-    Integer insertSysMenu(SysMenu sysMenu) throws Exception;
+    Integer addSysMenu(SysMenu sysMenu) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysMenuList
      * @throws Exception
      */
-    void insertSysMenuList(List<SysMenu> sysMenuList) throws Exception;
+    void addSysMenuList(List<SysMenu> sysMenuList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysMenuService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysMenuByKey(Long smId) throws Exception;
+    Integer deleteSysMenu(Long smId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysMenuList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysMenuList(List<SysMenu> sysMenuList) throws Exception;
+    void deleteSysMenuList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysMenuService {
     /**
      * 保存记录
      * @param sysMenu
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysMenu(SysMenu sysMenu,Boolean isFullUpdate) throws Exception;
+     void saveSysMenu(SysMenu sysMenu) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysMenuList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysMenuList(List<SysMenu> sysMenuList,Boolean isFullUpdate) throws Exception;
+     void saveSysMenuList(List<SysMenu> sysMenuList) throws Exception;
 }
 

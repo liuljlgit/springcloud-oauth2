@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysUserService;
-import com.cloud.auth.authserver.dao.inft.ISysUserDao;
+import com.cloud.auth.authserver.dao.ISysUserDao;
 import com.cloud.auth.authserver.entity.SysUser;
 import com.cloud.auth.authserver.cache.inft.ISysUserRedis;
 import com.cloud.auth.authserver.webentity.SysUserResp;
@@ -85,14 +86,14 @@ public class SysUserServiceImpl implements ISysUserService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysUser(SysUser sysUser) throws Exception {
+    public Integer addSysUser(SysUser sysUser) throws Exception {
         if(Objects.isNull(sysUser)){
             return 0;
         }
         if(Objects.isNull(sysUser.getSuId())){
             sysUser.setSuId(sysUserRedis.getSysUserId());
         }
-        Integer result =  sysUserDao.insertSysUser(sysUser);
+        Integer result =  sysUserDao.addSysUser(sysUser);
         sysUserRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysUserServiceImpl implements ISysUserService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysUserList(List<SysUser> sysUserList) throws Exception {
+    public void addSysUserList(List<SysUser> sysUserList) throws Exception {
         if(CollectionUtils.isEmpty(sysUserList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysUserServiceImpl implements ISysUserService{
                 sysUser.setSuId(sysUserRedis.getSysUserId());
             }
         }
-        sysUserDao.insertSysUserList(sysUserList);
+        sysUserDao.addSysUserList(sysUserList);
         sysUserRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysUserServiceImpl implements ISysUserService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysUserByKey(Long suId) throws Exception {
+    public Integer deleteSysUser(Long suId) throws Exception {
         if(Objects.isNull(suId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysUserDao.deleteSysUserByKey(suId);
+        Integer result = sysUserDao.deleteSysUser(suId);
         sysUserRedis.deleteAllHashSetByPage();
         sysUserRedis.deleteSysUser(suId);
         return result;
@@ -190,22 +191,19 @@ public class SysUserServiceImpl implements ISysUserService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysUserList(List<SysUser> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysUserList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysUser sysUser : list) {
-            if(Objects.isNull(sysUser.getSuId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysUserRedis.deleteSysUser(sysUser.getSuId());
+        for (Long id : ids) {
+            sysUserRedis.deleteSysUser(id);
         }
-        sysUserDao.deleteSysUserList(list);
+        sysUserDao.deleteSysUserList(ids);
         sysUserRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysUserServiceImpl implements ISysUserService{
         }
         List<SysUser> resList;
         if(useCache){
-            resList = sysUserRedis.getSysUserListByIds(list);
-            Map<Long, SysUser> sysUserMap = resList.stream().collect(Collectors.toMap(e -> e.getSuId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysUserMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysUserRedis.getSysUserListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSuId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysUser> nullObjList = sysUserDao.findSysUserListByIds(nullList);
+                List<SysUser> nullObjList = sysUserDao.findSysUserListByIds(nullIds);
                 for(SysUser e : nullObjList){
                     sysUserRedis.setSysUser(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysUserServiceImpl implements ISysUserService{
     /**
      * 保存记录
      * @param sysUser
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysUser(SysUser sysUser,Boolean isFullUpdate) throws Exception {
+    public void saveSysUser(SysUser sysUser) throws Exception {
         if(Objects.isNull(sysUser)){
            return ;
         }
         if(Objects.isNull(sysUser.getSuId())){
             sysUser.setSuId(sysUserRedis.getSysUserId());
-            insertSysUser(sysUser);
+            addSysUser(sysUser);
         }else{
-            updateSysUser(sysUser,isFullUpdate);
+            updateSysUser(sysUser,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysUserList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysUserList(List<SysUser> sysUserList,Boolean isFullUpdate) throws Exception {
+    public void saveSysUserList(List<SysUser> sysUserList) throws Exception {
         if(CollectionUtils.isEmpty(sysUserList)){
             return ;
         }
-        List<SysUser> insertList = sysUserList.stream().filter(e -> Objects.isNull(e.getSuId())).collect(Collectors.toList());
+        List<SysUser> addList = sysUserList.stream().filter(e -> Objects.isNull(e.getSuId())).collect(Collectors.toList());
         List<SysUser> updateList = sysUserList.stream().filter(e -> !Objects.isNull(e.getSuId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSuId(sysUserRedis.getSysUserId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysUserList(insertList);
+            addSysUserList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysUserList(updateList,isFullUpdate);
+            updateSysUserList(updateList,false);
         }
     }
 }

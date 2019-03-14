@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysRoleMenuService;
-import com.cloud.auth.authserver.dao.inft.ISysRoleMenuDao;
+import com.cloud.auth.authserver.dao.ISysRoleMenuDao;
 import com.cloud.auth.authserver.entity.SysRoleMenu;
 import com.cloud.auth.authserver.cache.inft.ISysRoleMenuRedis;
 import com.cloud.auth.authserver.webentity.SysRoleMenuResp;
@@ -85,14 +86,14 @@ public class SysRoleMenuServiceImpl implements ISysRoleMenuService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysRoleMenu(SysRoleMenu sysRoleMenu) throws Exception {
+    public Integer addSysRoleMenu(SysRoleMenu sysRoleMenu) throws Exception {
         if(Objects.isNull(sysRoleMenu)){
             return 0;
         }
         if(Objects.isNull(sysRoleMenu.getSrmId())){
             sysRoleMenu.setSrmId(sysRoleMenuRedis.getSysRoleMenuId());
         }
-        Integer result =  sysRoleMenuDao.insertSysRoleMenu(sysRoleMenu);
+        Integer result =  sysRoleMenuDao.addSysRoleMenu(sysRoleMenu);
         sysRoleMenuRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysRoleMenuServiceImpl implements ISysRoleMenuService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList) throws Exception {
+    public void addSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList) throws Exception {
         if(CollectionUtils.isEmpty(sysRoleMenuList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysRoleMenuServiceImpl implements ISysRoleMenuService{
                 sysRoleMenu.setSrmId(sysRoleMenuRedis.getSysRoleMenuId());
             }
         }
-        sysRoleMenuDao.insertSysRoleMenuList(sysRoleMenuList);
+        sysRoleMenuDao.addSysRoleMenuList(sysRoleMenuList);
         sysRoleMenuRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysRoleMenuServiceImpl implements ISysRoleMenuService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysRoleMenuByKey(Long srmId) throws Exception {
+    public Integer deleteSysRoleMenu(Long srmId) throws Exception {
         if(Objects.isNull(srmId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysRoleMenuDao.deleteSysRoleMenuByKey(srmId);
+        Integer result = sysRoleMenuDao.deleteSysRoleMenu(srmId);
         sysRoleMenuRedis.deleteAllHashSetByPage();
         sysRoleMenuRedis.deleteSysRoleMenu(srmId);
         return result;
@@ -190,22 +191,19 @@ public class SysRoleMenuServiceImpl implements ISysRoleMenuService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysRoleMenuList(List<SysRoleMenu> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysRoleMenuList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysRoleMenu sysRoleMenu : list) {
-            if(Objects.isNull(sysRoleMenu.getSrmId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysRoleMenuRedis.deleteSysRoleMenu(sysRoleMenu.getSrmId());
+        for (Long id : ids) {
+            sysRoleMenuRedis.deleteSysRoleMenu(id);
         }
-        sysRoleMenuDao.deleteSysRoleMenuList(list);
+        sysRoleMenuDao.deleteSysRoleMenuList(ids);
         sysRoleMenuRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysRoleMenuServiceImpl implements ISysRoleMenuService{
         }
         List<SysRoleMenu> resList;
         if(useCache){
-            resList = sysRoleMenuRedis.getSysRoleMenuListByIds(list);
-            Map<Long, SysRoleMenu> sysRoleMenuMap = resList.stream().collect(Collectors.toMap(e -> e.getSrmId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysRoleMenuMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysRoleMenuRedis.getSysRoleMenuListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSrmId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysRoleMenu> nullObjList = sysRoleMenuDao.findSysRoleMenuListByIds(nullList);
+                List<SysRoleMenu> nullObjList = sysRoleMenuDao.findSysRoleMenuListByIds(nullIds);
                 for(SysRoleMenu e : nullObjList){
                     sysRoleMenuRedis.setSysRoleMenu(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysRoleMenuServiceImpl implements ISysRoleMenuService{
     /**
      * 保存记录
      * @param sysRoleMenu
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysRoleMenu(SysRoleMenu sysRoleMenu,Boolean isFullUpdate) throws Exception {
+    public void saveSysRoleMenu(SysRoleMenu sysRoleMenu) throws Exception {
         if(Objects.isNull(sysRoleMenu)){
            return ;
         }
         if(Objects.isNull(sysRoleMenu.getSrmId())){
             sysRoleMenu.setSrmId(sysRoleMenuRedis.getSysRoleMenuId());
-            insertSysRoleMenu(sysRoleMenu);
+            addSysRoleMenu(sysRoleMenu);
         }else{
-            updateSysRoleMenu(sysRoleMenu,isFullUpdate);
+            updateSysRoleMenu(sysRoleMenu,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysRoleMenuList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList,Boolean isFullUpdate) throws Exception {
+    public void saveSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList) throws Exception {
         if(CollectionUtils.isEmpty(sysRoleMenuList)){
             return ;
         }
-        List<SysRoleMenu> insertList = sysRoleMenuList.stream().filter(e -> Objects.isNull(e.getSrmId())).collect(Collectors.toList());
+        List<SysRoleMenu> addList = sysRoleMenuList.stream().filter(e -> Objects.isNull(e.getSrmId())).collect(Collectors.toList());
         List<SysRoleMenu> updateList = sysRoleMenuList.stream().filter(e -> !Objects.isNull(e.getSrmId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSrmId(sysRoleMenuRedis.getSysRoleMenuId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysRoleMenuList(insertList);
+            addSysRoleMenuList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysRoleMenuList(updateList,isFullUpdate);
+            updateSysRoleMenuList(updateList,false);
         }
     }
 }

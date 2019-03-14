@@ -1,4 +1,4 @@
-package com.cloud.auth.authserver.dao.inft;
+package com.cloud.auth.authserver.dao;
 
 import java.util.*;
 import org.apache.ibatis.annotations.Param;
@@ -25,13 +25,13 @@ public interface ISysUserDao {
      * @param sysUser
      * @return
      */
-    Integer insertSysUser(SysUser sysUser);
+    Integer addSysUser(SysUser sysUser);
 
     /**
      * 批量新增对象
      * @param list
      */
-    void insertSysUserList(List<SysUser> list);
+    void addSysUserList(List<SysUser> list);
 
     /**
      * 更新对象
@@ -64,13 +64,13 @@ public interface ISysUserDao {
      * @param suId
      * @return
      */
-    Integer deleteSysUserByKey(Long suId);
+    Integer deleteSysUser(Long suId);
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      */
-    void deleteSysUserList(List<SysUser> list);
+    void deleteSysUserList(List<Long> ids);
 
     /**
      * 查询记录总数

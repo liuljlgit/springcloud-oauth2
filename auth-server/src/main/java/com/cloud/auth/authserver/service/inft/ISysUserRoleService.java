@@ -34,14 +34,14 @@ public interface ISysUserRoleService {
      * @return
      * @throws Exception
      */
-    Integer insertSysUserRole(SysUserRole sysUserRole) throws Exception;
+    Integer addSysUserRole(SysUserRole sysUserRole) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysUserRoleList
      * @throws Exception
      */
-    void insertSysUserRoleList(List<SysUserRole> sysUserRoleList) throws Exception;
+    void addSysUserRoleList(List<SysUserRole> sysUserRoleList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysUserRoleService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysUserRoleByKey(Long surId) throws Exception;
+    Integer deleteSysUserRole(Long surId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysUserRoleList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysUserRoleList(List<SysUserRole> sysUserRoleList) throws Exception;
+    void deleteSysUserRoleList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysUserRoleService {
     /**
      * 保存记录
      * @param sysUserRole
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysUserRole(SysUserRole sysUserRole,Boolean isFullUpdate) throws Exception;
+     void saveSysUserRole(SysUserRole sysUserRole) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysUserRoleList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysUserRoleList(List<SysUserRole> sysUserRoleList,Boolean isFullUpdate) throws Exception;
+     void saveSysUserRoleList(List<SysUserRole> sysUserRoleList) throws Exception;
 }
 

@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.cloud.auth.authserver.cache.inft.ISysCompanyRedis;
-import com.cloud.auth.authserver.dao.inft.ISysCompanyDao;
+import com.cloud.auth.authserver.dao.ISysCompanyDao;
 import com.cloud.auth.authserver.entity.SysCompany;
 import com.cloud.common.complexquery.QueryExample;
 import com.cloud.common.exception.BusiException;

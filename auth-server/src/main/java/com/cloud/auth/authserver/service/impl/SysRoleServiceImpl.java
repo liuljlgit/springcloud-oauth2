@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysRoleService;
-import com.cloud.auth.authserver.dao.inft.ISysRoleDao;
+import com.cloud.auth.authserver.dao.ISysRoleDao;
 import com.cloud.auth.authserver.entity.SysRole;
 import com.cloud.auth.authserver.cache.inft.ISysRoleRedis;
 import com.cloud.auth.authserver.webentity.SysRoleResp;
@@ -85,14 +86,14 @@ public class SysRoleServiceImpl implements ISysRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysRole(SysRole sysRole) throws Exception {
+    public Integer addSysRole(SysRole sysRole) throws Exception {
         if(Objects.isNull(sysRole)){
             return 0;
         }
         if(Objects.isNull(sysRole.getSrId())){
             sysRole.setSrId(sysRoleRedis.getSysRoleId());
         }
-        Integer result =  sysRoleDao.insertSysRole(sysRole);
+        Integer result =  sysRoleDao.addSysRole(sysRole);
         sysRoleRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysRoleServiceImpl implements ISysRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysRoleList(List<SysRole> sysRoleList) throws Exception {
+    public void addSysRoleList(List<SysRole> sysRoleList) throws Exception {
         if(CollectionUtils.isEmpty(sysRoleList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysRoleServiceImpl implements ISysRoleService{
                 sysRole.setSrId(sysRoleRedis.getSysRoleId());
             }
         }
-        sysRoleDao.insertSysRoleList(sysRoleList);
+        sysRoleDao.addSysRoleList(sysRoleList);
         sysRoleRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysRoleServiceImpl implements ISysRoleService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysRoleByKey(Long srId) throws Exception {
+    public Integer deleteSysRole(Long srId) throws Exception {
         if(Objects.isNull(srId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysRoleDao.deleteSysRoleByKey(srId);
+        Integer result = sysRoleDao.deleteSysRole(srId);
         sysRoleRedis.deleteAllHashSetByPage();
         sysRoleRedis.deleteSysRole(srId);
         return result;
@@ -190,22 +191,19 @@ public class SysRoleServiceImpl implements ISysRoleService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysRoleList(List<SysRole> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysRoleList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysRole sysRole : list) {
-            if(Objects.isNull(sysRole.getSrId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysRoleRedis.deleteSysRole(sysRole.getSrId());
+        for (Long id : ids) {
+            sysRoleRedis.deleteSysRole(id);
         }
-        sysRoleDao.deleteSysRoleList(list);
+        sysRoleDao.deleteSysRoleList(ids);
         sysRoleRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysRoleServiceImpl implements ISysRoleService{
         }
         List<SysRole> resList;
         if(useCache){
-            resList = sysRoleRedis.getSysRoleListByIds(list);
-            Map<Long, SysRole> sysRoleMap = resList.stream().collect(Collectors.toMap(e -> e.getSrId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysRoleMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysRoleRedis.getSysRoleListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSrId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysRole> nullObjList = sysRoleDao.findSysRoleListByIds(nullList);
+                List<SysRole> nullObjList = sysRoleDao.findSysRoleListByIds(nullIds);
                 for(SysRole e : nullObjList){
                     sysRoleRedis.setSysRole(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysRoleServiceImpl implements ISysRoleService{
     /**
      * 保存记录
      * @param sysRole
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysRole(SysRole sysRole,Boolean isFullUpdate) throws Exception {
+    public void saveSysRole(SysRole sysRole) throws Exception {
         if(Objects.isNull(sysRole)){
            return ;
         }
         if(Objects.isNull(sysRole.getSrId())){
             sysRole.setSrId(sysRoleRedis.getSysRoleId());
-            insertSysRole(sysRole);
+            addSysRole(sysRole);
         }else{
-            updateSysRole(sysRole,isFullUpdate);
+            updateSysRole(sysRole,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysRoleList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysRoleList(List<SysRole> sysRoleList,Boolean isFullUpdate) throws Exception {
+    public void saveSysRoleList(List<SysRole> sysRoleList) throws Exception {
         if(CollectionUtils.isEmpty(sysRoleList)){
             return ;
         }
-        List<SysRole> insertList = sysRoleList.stream().filter(e -> Objects.isNull(e.getSrId())).collect(Collectors.toList());
+        List<SysRole> addList = sysRoleList.stream().filter(e -> Objects.isNull(e.getSrId())).collect(Collectors.toList());
         List<SysRole> updateList = sysRoleList.stream().filter(e -> !Objects.isNull(e.getSrId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSrId(sysRoleRedis.getSysRoleId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysRoleList(insertList);
+            addSysRoleList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysRoleList(updateList,isFullUpdate);
+            updateSysRoleList(updateList,false);
         }
     }
 }

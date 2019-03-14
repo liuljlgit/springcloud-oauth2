@@ -14,7 +14,7 @@ public class DataServerApplicationTests {
 	@Test
 	public void autocode() {
 		//数据库配置
-		GenProperties.URL = "jdbc:mysql://192.168.1.135:3306/oauth2";
+		GenProperties.URL = "jdbc:mysql://192.168.123.134:3306/oauth2";
 		GenProperties.NAME = "root";
 		GenProperties.PASS = "root";
 		GenProperties.DRIVER = "com.mysql.jdbc.Driver";

@@ -34,14 +34,14 @@ public interface ISysRolePermissionService {
      * @return
      * @throws Exception
      */
-    Integer insertSysRolePermission(SysRolePermission sysRolePermission) throws Exception;
+    Integer addSysRolePermission(SysRolePermission sysRolePermission) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysRolePermissionList
      * @throws Exception
      */
-    void insertSysRolePermissionList(List<SysRolePermission> sysRolePermissionList) throws Exception;
+    void addSysRolePermissionList(List<SysRolePermission> sysRolePermissionList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysRolePermissionService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysRolePermissionByKey(Long srpId) throws Exception;
+    Integer deleteSysRolePermission(Long srpId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysRolePermissionList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysRolePermissionList(List<SysRolePermission> sysRolePermissionList) throws Exception;
+    void deleteSysRolePermissionList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysRolePermissionService {
     /**
      * 保存记录
      * @param sysRolePermission
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysRolePermission(SysRolePermission sysRolePermission,Boolean isFullUpdate) throws Exception;
+     void saveSysRolePermission(SysRolePermission sysRolePermission) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysRolePermissionList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysRolePermissionList(List<SysRolePermission> sysRolePermissionList,Boolean isFullUpdate) throws Exception;
+     void saveSysRolePermissionList(List<SysRolePermission> sysRolePermissionList) throws Exception;
 }
 

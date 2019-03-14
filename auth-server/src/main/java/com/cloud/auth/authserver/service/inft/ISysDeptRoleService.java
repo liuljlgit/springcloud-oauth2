@@ -34,14 +34,14 @@ public interface ISysDeptRoleService {
      * @return
      * @throws Exception
      */
-    Integer insertSysDeptRole(SysDeptRole sysDeptRole) throws Exception;
+    Integer addSysDeptRole(SysDeptRole sysDeptRole) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysDeptRoleList
      * @throws Exception
      */
-    void insertSysDeptRoleList(List<SysDeptRole> sysDeptRoleList) throws Exception;
+    void addSysDeptRoleList(List<SysDeptRole> sysDeptRoleList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysDeptRoleService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysDeptRoleByKey(Long sdrId) throws Exception;
+    Integer deleteSysDeptRole(Long sdrId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysDeptRoleList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysDeptRoleList(List<SysDeptRole> sysDeptRoleList) throws Exception;
+    void deleteSysDeptRoleList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysDeptRoleService {
     /**
      * 保存记录
      * @param sysDeptRole
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysDeptRole(SysDeptRole sysDeptRole,Boolean isFullUpdate) throws Exception;
+     void saveSysDeptRole(SysDeptRole sysDeptRole) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysDeptRoleList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysDeptRoleList(List<SysDeptRole> sysDeptRoleList,Boolean isFullUpdate) throws Exception;
+     void saveSysDeptRoleList(List<SysDeptRole> sysDeptRoleList) throws Exception;
 }
 

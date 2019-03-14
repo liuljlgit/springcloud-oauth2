@@ -2,11 +2,10 @@ package com.cloud.auth.authserver.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.cloud.common.base.BaseController;
-import com.cloud.common.webcomm.ReqEntity;
 import com.cloud.common.exception.BusiException;
 import com.alibaba.fastjson.JSONObject;
 import com.cloud.common.complexquery.QueryExample;
+import com.cloud.common.webcomm.RespEntity;
 import java.util.*;
 import com.cloud.auth.authserver.service.inft.ISysRoleService;
 import com.cloud.auth.authserver.entity.SysRole;
@@ -17,7 +16,7 @@ import com.cloud.auth.authserver.webentity.SysRoleResp;
  * @author lijun
  */
 @RestController
-public class SysRoleCtrl extends BaseController {
+public class SysRoleCtrl{
 
     @Autowired
     private ISysRoleService sysRoleService;
@@ -33,9 +32,7 @@ public class SysRoleCtrl extends BaseController {
          throw new BusiException("请输入要获取的数据的ID") ;
       }
       SysRole sysRole = sysRoleService.loadSysRoleByKey(srId);
-      JSONObject resp = new JSONObject();
-      resp.put("sysRole",new SysRoleResp(sysRole));
-      return formatResponseParams(EXEC_OK,resp);
+      return RespEntity.ok(new SysRoleResp(sysRole));
    }
 
    /**
@@ -44,15 +41,13 @@ public class SysRoleCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysRole/selectone")
-   public String selectOneSysRole(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysRole sysRoleReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRole.class);
+   public String selectOneSysRole(@RequestBody JSONObject reqEntity) throws Exception {
+       SysRole sysRoleReq = JSONObject.parseObject(reqEntity.toJSONString(), SysRole.class);
        SysRole sysRole = sysRoleService.selectOneSysRole(sysRoleReq,true);
        if(Objects.isNull(sysRole)){
            throw new BusiException("没有符合条件的记录");
        }
-       JSONObject resp = new JSONObject();
-       resp.put("sysRole",new SysRoleResp(sysRole));
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(new SysRoleResp(sysRole));
    }
 
    /**
@@ -61,16 +56,14 @@ public class SysRoleCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysRole/criteria/selectone")
-   public String selectOneSysRoleExample(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysRole sysRoleReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRole.class);
+   public String selectOneSysRoleExample(@RequestBody JSONObject reqEntity) throws Exception {
+       SysRole sysRoleReq = JSONObject.parseObject(reqEntity.toJSONString(), SysRole.class);
        QueryExample queryExample = new QueryExample();
        SysRole sysRole = sysRoleService.selectOneSysRole(queryExample,true);
        if(Objects.isNull(sysRole)){
            throw new BusiException("没有符合条件的记录");
        }
-       JSONObject resp = new JSONObject();
-       resp.put("sysRole",new SysRoleResp(sysRole));
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(new SysRoleResp(sysRole));
    }
 
   /**
@@ -79,10 +72,10 @@ public class SysRoleCtrl extends BaseController {
    * @throws Exception
    */
    @PostMapping(value = "/sysRole/list")
-   public String getSysRoleListByPage(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysRole sysRole = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRole.class);
+   public String getSysRoleListByPage(@RequestBody JSONObject reqEntity) throws Exception {
+       SysRole sysRole = JSONObject.parseObject(reqEntity.toJSONString(), SysRole.class);
        JSONObject resp = sysRoleService.getPageSysRole(sysRole,true);
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(resp);
    }
 
    /**
@@ -91,11 +84,11 @@ public class SysRoleCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysRole/criteria/list")
-   public String getSysRoleListExampleByPage(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysRole sysRole = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRole.class);
+   public String getSysRoleListExampleByPage(@RequestBody JSONObject reqEntity) throws Exception {
+       SysRole sysRole = JSONObject.parseObject(reqEntity.toJSONString(), SysRole.class);
        QueryExample queryExample = new QueryExample();
        JSONObject resp = sysRoleService.getPageSysRoleExample(queryExample,true);
-       return formatResponseParams(EXEC_OK, resp);
+       return RespEntity.ok(resp);
    }
 
   /**
@@ -104,10 +97,10 @@ public class SysRoleCtrl extends BaseController {
    * @throws Exception
    */
    @PostMapping(value = "/sysRole")
-   public String saveSysRole(@RequestBody ReqEntity reqEntity) throws  Exception{
-       SysRole sysRole = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysRole.class);
-       sysRoleService.saveSysRole(sysRole,false);
-       return formatResponseParams(EXEC_OK,null);
+   public String saveSysRole(@RequestBody JSONObject reqEntity) throws  Exception{
+       SysRole sysRole = JSONObject.parseObject(reqEntity.toJSONString(), SysRole.class);
+       sysRoleService.saveSysRole(sysRole);
+       return RespEntity.ok();
    }
 
    /**
@@ -116,12 +109,12 @@ public class SysRoleCtrl extends BaseController {
     * @throws Exception
     */
     @DeleteMapping(value = "/sysRole/{srId}")
-    public String deleteSysRoleByKey(@PathVariable(value="srId") Long srId) throws  Exception{
+    public String deleteSysRole(@PathVariable(value="srId") Long srId) throws  Exception{
         if(Objects.isNull(srId)){
            throw new BusiException("入参请求异常") ;
         }
-        sysRoleService.deleteSysRoleByKey(srId);
-        return formatResponseParams(EXEC_OK,null);
+        sysRoleService.deleteSysRole(srId);
+        return RespEntity.ok();
     }
 
 

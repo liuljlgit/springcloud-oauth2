@@ -3,9 +3,8 @@ package com.cloud.auth.authserver.security.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.cloud.auth.authserver.entity.SysUser;
 import com.cloud.auth.authserver.service.inft.ISysUserService;
-import com.cloud.common.base.BaseController;
 import com.cloud.common.exception.BusiException;
-import com.cloud.common.webcomm.ReqEntity;
+import com.cloud.common.webcomm.RespEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/users")
-public class UserController extends BaseController {
+public class UserController {
 
     Logger logger = LoggerFactory.getLogger(UserController.class);
 
@@ -42,8 +41,8 @@ public class UserController extends BaseController {
      * @throws Exception
      */
     @PostMapping(value = "/register")
-    public String saveSysUser(@RequestBody ReqEntity reqEntity) throws  Exception{
-        SysUser sysUser = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysUser.class);
+    public String saveSysUser(@RequestBody JSONObject reqEntity) throws  Exception{
+        SysUser sysUser = JSONObject.parseObject(reqEntity.toJSONString(), SysUser.class);
         if(Objects.isNull(sysUser.getAccount())){
             throw new BusiException("用户名不能为空");
         }
@@ -54,7 +53,7 @@ public class UserController extends BaseController {
         sysUser.setCreateTime(new Date());
         sysUser.setStatus((byte)1);
         sysUser.setStatusTime(new Date());
-        sysUserService.insertSysUser(sysUser);
-        return formatResponseParams(EXEC_OK,null);
+        sysUserService.addSysUser(sysUser);
+        return RespEntity.ok();
     }
 }

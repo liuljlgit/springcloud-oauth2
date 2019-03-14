@@ -34,14 +34,14 @@ public interface ISysRoleMenuService {
      * @return
      * @throws Exception
      */
-    Integer insertSysRoleMenu(SysRoleMenu sysRoleMenu) throws Exception;
+    Integer addSysRoleMenu(SysRoleMenu sysRoleMenu) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysRoleMenuList
      * @throws Exception
      */
-    void insertSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList) throws Exception;
+    void addSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysRoleMenuService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysRoleMenuByKey(Long srmId) throws Exception;
+    Integer deleteSysRoleMenu(Long srmId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysRoleMenuList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList) throws Exception;
+    void deleteSysRoleMenuList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysRoleMenuService {
     /**
      * 保存记录
      * @param sysRoleMenu
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysRoleMenu(SysRoleMenu sysRoleMenu,Boolean isFullUpdate) throws Exception;
+     void saveSysRoleMenu(SysRoleMenu sysRoleMenu) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysRoleMenuList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList,Boolean isFullUpdate) throws Exception;
+     void saveSysRoleMenuList(List<SysRoleMenu> sysRoleMenuList) throws Exception;
 }
 

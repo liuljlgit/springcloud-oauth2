@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.cloud.auth.authserver.dao.inft.ISysUserDao">
+<mapper namespace="com.cloud.auth.authserver.dao.ISysUserDao">
     <resultMap id="BaseResultMap" type="com.cloud.auth.authserver.entity.SysUser">
 		<result column="su_id" jdbcType="BIGINT" property="suId" />
 		<result column="sd_id" jdbcType="BIGINT" property="sdId" />
@@ -158,13 +158,13 @@
     </select>
 
     <!--插入对象-->
-    <insert id="insertSysUser">
+    <insert id="addSysUser">
         insert into sys_user(<include refid="Base_Column_List" />)
         values(<include refid="Base_Object_List" />)
     </insert>
 
     <!--批量插入对象-->
-    <insert id="insertSysUserList">
+    <insert id="addSysUserList">
         insert into sys_user(<include refid="Base_Column_List" />)
         values
         <foreach collection="list" index="index" item="item" separator=",">
@@ -310,7 +310,7 @@
         <where>
             <include refid="where_sql" />
         </where>
-        <if test="page!=null and pageSize!=null and page!=-1" >
+        <if test="page!=null and pageSize!=null and page>0" >
             limit #{index},#{pageSize}
         </if>
         <if test="orderByClause!=null and orderByClause!=''">
@@ -332,7 +332,7 @@
         <where>
             <include refid="Example_Where_Clause" />
         </where>
-        <if test="page!=null and pageSize!=null and page!=-1" >
+        <if test="page!=null and pageSize!=null and page>0" >
             limit #{index},#{pageSize}
         </if>
         <if test="orderByClause!=null and orderByClause!=''">
@@ -341,7 +341,7 @@
     </select>
 
     <!--根据主键删除对象-->
-    <delete id="deleteSysUserByKey">
+    <delete id="deleteSysUser">
         delete from sys_user
         <where>
             AND su_id = #{suId}
@@ -353,8 +353,8 @@
         delete from sys_user
         <where>
             su_id in
-            <foreach collection="list" open="(" close=")" separator="," item="item">
-                #{item.suId}
+            <foreach collection="ids" open="(" close=")" separator="," item="item">
+                #{item}
             </foreach>
         </where>
     </delete>

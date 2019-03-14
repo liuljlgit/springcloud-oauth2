@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysPermissionService;
-import com.cloud.auth.authserver.dao.inft.ISysPermissionDao;
+import com.cloud.auth.authserver.dao.ISysPermissionDao;
 import com.cloud.auth.authserver.entity.SysPermission;
 import com.cloud.auth.authserver.cache.inft.ISysPermissionRedis;
 import com.cloud.auth.authserver.webentity.SysPermissionResp;
@@ -85,14 +86,14 @@ public class SysPermissionServiceImpl implements ISysPermissionService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysPermission(SysPermission sysPermission) throws Exception {
+    public Integer addSysPermission(SysPermission sysPermission) throws Exception {
         if(Objects.isNull(sysPermission)){
             return 0;
         }
         if(Objects.isNull(sysPermission.getSpId())){
             sysPermission.setSpId(sysPermissionRedis.getSysPermissionId());
         }
-        Integer result =  sysPermissionDao.insertSysPermission(sysPermission);
+        Integer result =  sysPermissionDao.addSysPermission(sysPermission);
         sysPermissionRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysPermissionServiceImpl implements ISysPermissionService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysPermissionList(List<SysPermission> sysPermissionList) throws Exception {
+    public void addSysPermissionList(List<SysPermission> sysPermissionList) throws Exception {
         if(CollectionUtils.isEmpty(sysPermissionList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysPermissionServiceImpl implements ISysPermissionService{
                 sysPermission.setSpId(sysPermissionRedis.getSysPermissionId());
             }
         }
-        sysPermissionDao.insertSysPermissionList(sysPermissionList);
+        sysPermissionDao.addSysPermissionList(sysPermissionList);
         sysPermissionRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysPermissionServiceImpl implements ISysPermissionService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysPermissionByKey(Long spId) throws Exception {
+    public Integer deleteSysPermission(Long spId) throws Exception {
         if(Objects.isNull(spId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysPermissionDao.deleteSysPermissionByKey(spId);
+        Integer result = sysPermissionDao.deleteSysPermission(spId);
         sysPermissionRedis.deleteAllHashSetByPage();
         sysPermissionRedis.deleteSysPermission(spId);
         return result;
@@ -190,22 +191,19 @@ public class SysPermissionServiceImpl implements ISysPermissionService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysPermissionList(List<SysPermission> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysPermissionList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysPermission sysPermission : list) {
-            if(Objects.isNull(sysPermission.getSpId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysPermissionRedis.deleteSysPermission(sysPermission.getSpId());
+        for (Long id : ids) {
+            sysPermissionRedis.deleteSysPermission(id);
         }
-        sysPermissionDao.deleteSysPermissionList(list);
+        sysPermissionDao.deleteSysPermissionList(ids);
         sysPermissionRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysPermissionServiceImpl implements ISysPermissionService{
         }
         List<SysPermission> resList;
         if(useCache){
-            resList = sysPermissionRedis.getSysPermissionListByIds(list);
-            Map<Long, SysPermission> sysPermissionMap = resList.stream().collect(Collectors.toMap(e -> e.getSpId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysPermissionMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysPermissionRedis.getSysPermissionListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSpId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysPermission> nullObjList = sysPermissionDao.findSysPermissionListByIds(nullList);
+                List<SysPermission> nullObjList = sysPermissionDao.findSysPermissionListByIds(nullIds);
                 for(SysPermission e : nullObjList){
                     sysPermissionRedis.setSysPermission(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysPermissionServiceImpl implements ISysPermissionService{
     /**
      * 保存记录
      * @param sysPermission
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysPermission(SysPermission sysPermission,Boolean isFullUpdate) throws Exception {
+    public void saveSysPermission(SysPermission sysPermission) throws Exception {
         if(Objects.isNull(sysPermission)){
            return ;
         }
         if(Objects.isNull(sysPermission.getSpId())){
             sysPermission.setSpId(sysPermissionRedis.getSysPermissionId());
-            insertSysPermission(sysPermission);
+            addSysPermission(sysPermission);
         }else{
-            updateSysPermission(sysPermission,isFullUpdate);
+            updateSysPermission(sysPermission,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysPermissionList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysPermissionList(List<SysPermission> sysPermissionList,Boolean isFullUpdate) throws Exception {
+    public void saveSysPermissionList(List<SysPermission> sysPermissionList) throws Exception {
         if(CollectionUtils.isEmpty(sysPermissionList)){
             return ;
         }
-        List<SysPermission> insertList = sysPermissionList.stream().filter(e -> Objects.isNull(e.getSpId())).collect(Collectors.toList());
+        List<SysPermission> addList = sysPermissionList.stream().filter(e -> Objects.isNull(e.getSpId())).collect(Collectors.toList());
         List<SysPermission> updateList = sysPermissionList.stream().filter(e -> !Objects.isNull(e.getSpId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSpId(sysPermissionRedis.getSysPermissionId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysPermissionList(insertList);
+            addSysPermissionList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysPermissionList(updateList,isFullUpdate);
+            updateSysPermissionList(updateList,false);
         }
     }
 }

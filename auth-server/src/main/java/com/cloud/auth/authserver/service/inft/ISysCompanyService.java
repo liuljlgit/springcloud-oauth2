@@ -34,14 +34,14 @@ public interface ISysCompanyService {
      * @return
      * @throws Exception
      */
-    Integer insertSysCompany(SysCompany sysCompany) throws Exception;
+    Integer addSysCompany(SysCompany sysCompany) throws Exception;
 
     /**
      * 批量新增对象
      * @param sysCompanyList
      * @throws Exception
      */
-    void insertSysCompanyList(List<SysCompany> sysCompanyList) throws Exception;
+    void addSysCompanyList(List<SysCompany> sysCompanyList) throws Exception;
 
     /**
      * 更新对象
@@ -66,14 +66,14 @@ public interface ISysCompanyService {
      * @return
      * @throws Exception
      */
-    Integer deleteSysCompanyByKey(Long scId) throws Exception;
+    Integer deleteSysCompany(Long scId) throws Exception;
 
     /**
      * 批量删除对象
-     * @param sysCompanyList
+     * @param ids
      * @throws Exception
      */
-    void deleteSysCompanyList(List<SysCompany> sysCompanyList) throws Exception;
+    void deleteSysCompanyList(List<Long> ids) throws Exception;
 
     /**
      * 查询记录总数
@@ -122,17 +122,15 @@ public interface ISysCompanyService {
     /**
      * 保存记录
      * @param sysCompany
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysCompany(SysCompany sysCompany,Boolean isFullUpdate) throws Exception;
+     void saveSysCompany(SysCompany sysCompany) throws Exception;
 
     /**
      * 批量保存记录
      * @param sysCompanyList
-     * @param isFullUpdate
      * @throws Exception
      */
-     void saveSysCompanyList(List<SysCompany> sysCompanyList,Boolean isFullUpdate) throws Exception;
+     void saveSysCompanyList(List<SysCompany> sysCompanyList) throws Exception;
 }
 

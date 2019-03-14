@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import org.springframework.util.CollectionUtils;
+import com.cloud.common.utils.CollectionUtil;
 import com.cloud.common.constant.IConst;
 import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSON;
 import com.cloud.auth.authserver.service.inft.ISysRolePermissionService;
-import com.cloud.auth.authserver.dao.inft.ISysRolePermissionDao;
+import com.cloud.auth.authserver.dao.ISysRolePermissionDao;
 import com.cloud.auth.authserver.entity.SysRolePermission;
 import com.cloud.auth.authserver.cache.inft.ISysRolePermissionRedis;
 import com.cloud.auth.authserver.webentity.SysRolePermissionResp;
@@ -85,14 +86,14 @@ public class SysRolePermissionServiceImpl implements ISysRolePermissionService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer insertSysRolePermission(SysRolePermission sysRolePermission) throws Exception {
+    public Integer addSysRolePermission(SysRolePermission sysRolePermission) throws Exception {
         if(Objects.isNull(sysRolePermission)){
             return 0;
         }
         if(Objects.isNull(sysRolePermission.getSrpId())){
             sysRolePermission.setSrpId(sysRolePermissionRedis.getSysRolePermissionId());
         }
-        Integer result =  sysRolePermissionDao.insertSysRolePermission(sysRolePermission);
+        Integer result =  sysRolePermissionDao.addSysRolePermission(sysRolePermission);
         sysRolePermissionRedis.deleteAllHashSetByPage();
         return result;
     }
@@ -104,7 +105,7 @@ public class SysRolePermissionServiceImpl implements ISysRolePermissionService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void insertSysRolePermissionList(List<SysRolePermission> sysRolePermissionList) throws Exception {
+    public void addSysRolePermissionList(List<SysRolePermission> sysRolePermissionList) throws Exception {
         if(CollectionUtils.isEmpty(sysRolePermissionList)){
             return ;
         }
@@ -113,7 +114,7 @@ public class SysRolePermissionServiceImpl implements ISysRolePermissionService{
                 sysRolePermission.setSrpId(sysRolePermissionRedis.getSysRolePermissionId());
             }
         }
-        sysRolePermissionDao.insertSysRolePermissionList(sysRolePermissionList);
+        sysRolePermissionDao.addSysRolePermissionList(sysRolePermissionList);
         sysRolePermissionRedis.deleteAllHashSetByPage();
     }
 
@@ -178,11 +179,11 @@ public class SysRolePermissionServiceImpl implements ISysRolePermissionService{
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer deleteSysRolePermissionByKey(Long srpId) throws Exception {
+    public Integer deleteSysRolePermission(Long srpId) throws Exception {
         if(Objects.isNull(srpId)){
             throw new BusiException("请输入要删除的数据的ID");
         }
-        Integer result = sysRolePermissionDao.deleteSysRolePermissionByKey(srpId);
+        Integer result = sysRolePermissionDao.deleteSysRolePermission(srpId);
         sysRolePermissionRedis.deleteAllHashSetByPage();
         sysRolePermissionRedis.deleteSysRolePermission(srpId);
         return result;
@@ -190,22 +191,19 @@ public class SysRolePermissionServiceImpl implements ISysRolePermissionService{
 
     /**
      * 批量删除对象
-     * @param list
+     * @param ids
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteSysRolePermissionList(List<SysRolePermission> list) throws Exception {
-        if(CollectionUtils.isEmpty(list)){
+    public void deleteSysRolePermissionList(List<Long> ids) throws Exception {
+        if(CollectionUtils.isEmpty(ids)){
             return ;
         }
-        for (SysRolePermission sysRolePermission : list) {
-            if(Objects.isNull(sysRolePermission.getSrpId())){
-                throw new BusiException("删除主键不能为空");
-            }
-            sysRolePermissionRedis.deleteSysRolePermission(sysRolePermission.getSrpId());
+        for (Long id : ids) {
+            sysRolePermissionRedis.deleteSysRolePermission(id);
         }
-        sysRolePermissionDao.deleteSysRolePermissionList(list);
+        sysRolePermissionDao.deleteSysRolePermissionList(ids);
         sysRolePermissionRedis.deleteAllHashSetByPage();
     }
 
@@ -347,13 +345,13 @@ public class SysRolePermissionServiceImpl implements ISysRolePermissionService{
         }
         List<SysRolePermission> resList;
         if(useCache){
-            resList = sysRolePermissionRedis.getSysRolePermissionListByIds(list);
-            Map<Long, SysRolePermission> sysRolePermissionMap = resList.stream().collect(Collectors.toMap(e -> e.getSrpId(), e -> e));
-            List<Long> nullList = list.stream().filter(e -> !sysRolePermissionMap.containsKey(e)).collect(Collectors.toList());
-            if(CollectionUtils.isEmpty(nullList)){
+            resList = sysRolePermissionRedis.getSysRolePermissionListByIds(list).stream().filter(e -> Objects.nonNull(e)).collect(Collectors.toList());
+            List<Long> notNullIds = resList.stream().map(e->e.getSrpId()).collect(Collectors.toList());
+            List<Long> nullIds = new ArrayList<>(CollectionUtil.aSubtractB(list,notNullIds));
+            if(CollectionUtils.isEmpty(nullIds)){
                 return resList;
             }else{
-                List<SysRolePermission> nullObjList = sysRolePermissionDao.findSysRolePermissionListByIds(nullList);
+                List<SysRolePermission> nullObjList = sysRolePermissionDao.findSysRolePermissionListByIds(nullIds);
                 for(SysRolePermission e : nullObjList){
                     sysRolePermissionRedis.setSysRolePermission(e,IConst.MINUTE_15_EXPIRE);
                 }
@@ -415,46 +413,44 @@ public class SysRolePermissionServiceImpl implements ISysRolePermissionService{
     /**
      * 保存记录
      * @param sysRolePermission
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysRolePermission(SysRolePermission sysRolePermission,Boolean isFullUpdate) throws Exception {
+    public void saveSysRolePermission(SysRolePermission sysRolePermission) throws Exception {
         if(Objects.isNull(sysRolePermission)){
            return ;
         }
         if(Objects.isNull(sysRolePermission.getSrpId())){
             sysRolePermission.setSrpId(sysRolePermissionRedis.getSysRolePermissionId());
-            insertSysRolePermission(sysRolePermission);
+            addSysRolePermission(sysRolePermission);
         }else{
-            updateSysRolePermission(sysRolePermission,isFullUpdate);
+            updateSysRolePermission(sysRolePermission,false);
         }
     }
 
     /**
      * 批量保存记录
      * @param sysRolePermissionList
-     * @param isFullUpdate
      * @throws Exception
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveSysRolePermissionList(List<SysRolePermission> sysRolePermissionList,Boolean isFullUpdate) throws Exception {
+    public void saveSysRolePermissionList(List<SysRolePermission> sysRolePermissionList) throws Exception {
         if(CollectionUtils.isEmpty(sysRolePermissionList)){
             return ;
         }
-        List<SysRolePermission> insertList = sysRolePermissionList.stream().filter(e -> Objects.isNull(e.getSrpId())).collect(Collectors.toList());
+        List<SysRolePermission> addList = sysRolePermissionList.stream().filter(e -> Objects.isNull(e.getSrpId())).collect(Collectors.toList());
         List<SysRolePermission> updateList = sysRolePermissionList.stream().filter(e -> !Objects.isNull(e.getSrpId())).collect(Collectors.toList());
-        if(!CollectionUtils.isEmpty(insertList)){
-            insertList = insertList.stream().map(e->{
+        if(!CollectionUtils.isEmpty(addList)){
+            addList = addList.stream().map(e->{
                 e.setSrpId(sysRolePermissionRedis.getSysRolePermissionId());
                 return e;
             }).collect(Collectors.toList());
-            insertSysRolePermissionList(insertList);
+            addSysRolePermissionList(addList);
         }
         if(!CollectionUtils.isEmpty(updateList)){
-            updateSysRolePermissionList(updateList,isFullUpdate);
+            updateSysRolePermissionList(updateList,false);
         }
     }
 }

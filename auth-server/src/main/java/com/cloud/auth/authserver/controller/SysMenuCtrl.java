@@ -2,11 +2,10 @@ package com.cloud.auth.authserver.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.cloud.common.base.BaseController;
-import com.cloud.common.webcomm.ReqEntity;
 import com.cloud.common.exception.BusiException;
 import com.alibaba.fastjson.JSONObject;
 import com.cloud.common.complexquery.QueryExample;
+import com.cloud.common.webcomm.RespEntity;
 import java.util.*;
 import com.cloud.auth.authserver.service.inft.ISysMenuService;
 import com.cloud.auth.authserver.entity.SysMenu;
@@ -17,7 +16,7 @@ import com.cloud.auth.authserver.webentity.SysMenuResp;
  * @author lijun
  */
 @RestController
-public class SysMenuCtrl extends BaseController {
+public class SysMenuCtrl{
 
     @Autowired
     private ISysMenuService sysMenuService;
@@ -33,9 +32,7 @@ public class SysMenuCtrl extends BaseController {
          throw new BusiException("请输入要获取的数据的ID") ;
       }
       SysMenu sysMenu = sysMenuService.loadSysMenuByKey(smId);
-      JSONObject resp = new JSONObject();
-      resp.put("sysMenu",new SysMenuResp(sysMenu));
-      return formatResponseParams(EXEC_OK,resp);
+      return RespEntity.ok(new SysMenuResp(sysMenu));
    }
 
    /**
@@ -44,15 +41,13 @@ public class SysMenuCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysMenu/selectone")
-   public String selectOneSysMenu(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysMenu sysMenuReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysMenu.class);
+   public String selectOneSysMenu(@RequestBody JSONObject reqEntity) throws Exception {
+       SysMenu sysMenuReq = JSONObject.parseObject(reqEntity.toJSONString(), SysMenu.class);
        SysMenu sysMenu = sysMenuService.selectOneSysMenu(sysMenuReq,true);
        if(Objects.isNull(sysMenu)){
            throw new BusiException("没有符合条件的记录");
        }
-       JSONObject resp = new JSONObject();
-       resp.put("sysMenu",new SysMenuResp(sysMenu));
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(new SysMenuResp(sysMenu));
    }
 
    /**
@@ -61,16 +56,14 @@ public class SysMenuCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysMenu/criteria/selectone")
-   public String selectOneSysMenuExample(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysMenu sysMenuReq = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysMenu.class);
+   public String selectOneSysMenuExample(@RequestBody JSONObject reqEntity) throws Exception {
+       SysMenu sysMenuReq = JSONObject.parseObject(reqEntity.toJSONString(), SysMenu.class);
        QueryExample queryExample = new QueryExample();
        SysMenu sysMenu = sysMenuService.selectOneSysMenu(queryExample,true);
        if(Objects.isNull(sysMenu)){
            throw new BusiException("没有符合条件的记录");
        }
-       JSONObject resp = new JSONObject();
-       resp.put("sysMenu",new SysMenuResp(sysMenu));
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(new SysMenuResp(sysMenu));
    }
 
   /**
@@ -79,10 +72,10 @@ public class SysMenuCtrl extends BaseController {
    * @throws Exception
    */
    @PostMapping(value = "/sysMenu/list")
-   public String getSysMenuListByPage(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysMenu sysMenu = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysMenu.class);
+   public String getSysMenuListByPage(@RequestBody JSONObject reqEntity) throws Exception {
+       SysMenu sysMenu = JSONObject.parseObject(reqEntity.toJSONString(), SysMenu.class);
        JSONObject resp = sysMenuService.getPageSysMenu(sysMenu,true);
-       return formatResponseParams(EXEC_OK,resp);
+       return RespEntity.ok(resp);
    }
 
    /**
@@ -91,11 +84,11 @@ public class SysMenuCtrl extends BaseController {
     * @throws Exception
     */
    @PostMapping(value = "/sysMenu/criteria/list")
-   public String getSysMenuListExampleByPage(@RequestBody ReqEntity reqEntity) throws Exception {
-       SysMenu sysMenu = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysMenu.class);
+   public String getSysMenuListExampleByPage(@RequestBody JSONObject reqEntity) throws Exception {
+       SysMenu sysMenu = JSONObject.parseObject(reqEntity.toJSONString(), SysMenu.class);
        QueryExample queryExample = new QueryExample();
        JSONObject resp = sysMenuService.getPageSysMenuExample(queryExample,true);
-       return formatResponseParams(EXEC_OK, resp);
+       return RespEntity.ok(resp);
    }
 
   /**
@@ -104,10 +97,10 @@ public class SysMenuCtrl extends BaseController {
    * @throws Exception
    */
    @PostMapping(value = "/sysMenu")
-   public String saveSysMenu(@RequestBody ReqEntity reqEntity) throws  Exception{
-       SysMenu sysMenu = JSONObject.parseObject(reqEntity.getReqBody().toJSONString(), SysMenu.class);
-       sysMenuService.saveSysMenu(sysMenu,false);
-       return formatResponseParams(EXEC_OK,null);
+   public String saveSysMenu(@RequestBody JSONObject reqEntity) throws  Exception{
+       SysMenu sysMenu = JSONObject.parseObject(reqEntity.toJSONString(), SysMenu.class);
+       sysMenuService.saveSysMenu(sysMenu);
+       return RespEntity.ok();
    }
 
    /**
@@ -116,12 +109,12 @@ public class SysMenuCtrl extends BaseController {
     * @throws Exception
     */
     @DeleteMapping(value = "/sysMenu/{smId}")
-    public String deleteSysMenuByKey(@PathVariable(value="smId") Long smId) throws  Exception{
+    public String deleteSysMenu(@PathVariable(value="smId") Long smId) throws  Exception{
         if(Objects.isNull(smId)){
            throw new BusiException("入参请求异常") ;
         }
-        sysMenuService.deleteSysMenuByKey(smId);
-        return formatResponseParams(EXEC_OK,null);
+        sysMenuService.deleteSysMenu(smId);
+        return RespEntity.ok();
     }
 
 
