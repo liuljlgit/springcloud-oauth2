@@ -34,7 +34,7 @@ public class JwtConfig {
     public JwtAccessTokenConverter accessTokenConverter() {
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         Resource resource = new ClassPathResource("public.txt");
-        String publicKey = null;
+        String publicKey;
         try {
             publicKey = IOUtils.toString(resource.getInputStream());
         } catch (final IOException e) {

@@ -35,6 +35,7 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
         http.authorizeRequests()
             .antMatchers("/login").permitAll()
             .antMatchers("/logout").permitAll()
+                .antMatchers("/testRestTemplate").permitAll()
             .anyRequest()
             .authenticated();
     }
