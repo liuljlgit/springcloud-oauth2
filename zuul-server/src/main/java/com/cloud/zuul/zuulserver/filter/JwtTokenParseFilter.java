@@ -64,7 +64,7 @@ public class JwtTokenParseFilter extends ZuulFilter {
             Jwt jwt = JwtHelper.decode(accessToken);
             String claims = jwt.getClaims();
             Map claimsMap = jsonParser.parseMap(claims);
-            String userId = String.valueOf(claimsMap.get("user"));
+            String user_name = String.valueOf(claimsMap.get("user_name"));
         }
         return null;
     }
