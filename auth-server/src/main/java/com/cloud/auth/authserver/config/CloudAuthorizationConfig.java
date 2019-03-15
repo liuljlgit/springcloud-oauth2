@@ -90,6 +90,7 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
      */
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+        //配置allowFormAuthenticationForClients,允许表单请求,使用restTemplate的时候需设置成MediaType.APPLICATION_FORM_URLENCODED
         security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()").allowFormAuthenticationForClients();
     }
 

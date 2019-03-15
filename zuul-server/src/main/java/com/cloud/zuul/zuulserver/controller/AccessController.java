@@ -1,8 +1,15 @@
 package com.cloud.zuul.zuulserver.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cloud.common.exception.BusiException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 
 /**
  * 进行登录和登出操作
@@ -22,7 +30,26 @@ public class AccessController {
 
     @PostMapping(value = "/login")
     public String createAuthenticationToken(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) {
-        return null;
+        String username = reqEntity.getString("username");
+        String password = reqEntity.getString("password");
+        if(Objects.isNull(username) || Objects.isNull(password)){
+            throw new BusiException("用户名密码不能为空");
+        }
+        //封装请求/oauth/token
+        HttpHeaders reqHeaders = new HttpHeaders();
+        //请求设置成表单模式，否则无法进行请求
+        reqHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
+        formParams.set("username", username);
+        formParams.set("password", password);
+        formParams.set("grant_type", "password");
+        formParams.set("scope", "all");
+        formParams.set("client_id", "gateway_client");
+        formParams.set("client_secret", "123456");
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(formParams, reqHeaders);
+        ResponseEntity<OAuth2AccessToken> responseEntity = restTemplate.postForEntity("http://auth-server/oauth/token", entity, OAuth2AccessToken.class);
+        OAuth2AccessToken accessToken = responseEntity.getBody();
+        return accessToken.getValue();
     }
 
     @PostMapping(value = "/testRestTemplate")

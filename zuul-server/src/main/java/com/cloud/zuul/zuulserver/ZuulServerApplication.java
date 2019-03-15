@@ -1,6 +1,7 @@
 package com.cloud.zuul.zuulserver;
 
 import com.cloud.zuul.zuulserver.filter.AccessFilter;
+import com.cloud.zuul.zuulserver.filter.CorsZuulFilter;
 import com.cloud.zuul.zuulserver.filter.JwtTokenParseFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -42,9 +43,9 @@ public class ZuulServerApplication {
 	 * Cors过滤器
 	 * @return
 	 */
-	/*@Bean
+	@Bean
 	public CorsZuulFilter corsZuulFilter(){
 		return new CorsZuulFilter();
-	}*/
+	}
 }
 
