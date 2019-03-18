@@ -1,11 +1,15 @@
 package com.cloud.zuul.zuulserver.filter;
 
+import com.cloud.zuul.zuulserver.security.OAuth2CookieHelper;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 
 /**
  * 资源过滤器
@@ -13,7 +17,10 @@ import javax.servlet.http.HttpServletRequest;
  * 如果请求头不包含 Authorization参数值，直接拦截不再路由
  */
 public class AccessFilter extends ZuulFilter {
+
     private static Logger logger = LoggerFactory.getLogger(AccessFilter.class);
+
+    private OAuth2CookieHelper oAuth2CookieHelper;
 
     /**
      * 过滤器的类型 pre表示请求在路由之前被过滤
@@ -48,19 +55,14 @@ public class AccessFilter extends ZuulFilter {
      */
     @Override
     public Object run() {
-        RequestContext requestContext = RequestContext.getCurrentContext();
-        HttpServletRequest request = requestContext.getRequest();
-
-        logger.info("send {} request to {}",request.getMethod(),request.getRequestURL().toString());
-
-        Object authorization = request.getHeader("Authorization");
-        /*if (authorization == null){
-            logger.warn("Authorization token is empty");
-            requestContext.setSendZuulResponse(false);
-            requestContext.setResponseStatusCode(401);
-            requestContext.setResponseBody("Authorization token is empty");
-            return null;
-        }*/
+        RequestContext ctx = RequestContext.getCurrentContext();
+        HttpServletRequest httpServletRequest = ctx.getRequest();
+        HttpServletResponse httpServletResponse = ctx.getResponse();
+        Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(httpServletRequest);
+        if(Objects.nonNull(cookie)){
+            String token = String.format("Bearer %s", cookie.getValue());
+            ctx.addZuulRequestHeader("Authorization", token);
+        }
         return null;
     }
 }

@@ -2,6 +2,8 @@ package com.cloud.zuul.zuulserver.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cloud.common.exception.BusiException;
+import com.cloud.common.webcomm.RespEntity;
+import com.cloud.zuul.zuulserver.security.OAuth2CookieHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,8 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -28,6 +32,15 @@ public class AccessController {
     @Autowired
     RestTemplate restTemplate;
 
+    private OAuth2CookieHelper cookieHelper = new OAuth2CookieHelper();
+
+    /**
+     * 用户登录（需加密传输）
+     * @param reqEntity
+     * @param request
+     * @param response
+     * @return
+     */
     @PostMapping(value = "/login")
     public String createAuthenticationToken(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) {
         String username = reqEntity.getString("username");
@@ -49,7 +62,23 @@ public class AccessController {
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(formParams, reqHeaders);
         ResponseEntity<OAuth2AccessToken> responseEntity = restTemplate.postForEntity("http://auth-server/oauth/token", entity, OAuth2AccessToken.class);
         OAuth2AccessToken accessToken = responseEntity.getBody();
-        return accessToken.getValue();
+        //把token设置到cookie中
+        cookieHelper.createCookies(request, accessToken, Boolean.FALSE,response);
+        //登录信息返回
+        Map<String,Object> map = accessToken.getAdditionalInformation();
+        JSONObject respBody = new JSONObject(map);
+        return RespEntity.ok(respBody);
+    }
+
+    @PostMapping(value = "/logout")
+    public String logout(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) throws Exception{
+        Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(request);
+        if ( null == cookie){
+            throw new BusiException("请先登录!");
+        }
+        String token = String.format("Bearer %s", cookie.getValue());
+        cookieHelper.clearCookies(request, response);
+        return RespEntity.ok();
     }
 
     @PostMapping(value = "/testRestTemplate")
