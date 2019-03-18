@@ -41,7 +41,7 @@ public class AccessController {
      * @param response
      * @return
      */
-    @PostMapping(value = "/login")
+    @PostMapping(value = "/signin")
     public String createAuthenticationToken(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) {
         String username = reqEntity.getString("username");
         String password = reqEntity.getString("password");
@@ -70,7 +70,7 @@ public class AccessController {
         return RespEntity.ok(respBody);
     }
 
-    @PostMapping(value = "/logout")
+    @PostMapping(value = "/signout")
     public String logout(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) throws Exception{
         Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(request);
         if ( null == cookie){

@@ -33,8 +33,8 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-            .antMatchers("/login").permitAll()
-            .antMatchers("/logout").permitAll()
+            .antMatchers("/app/zuul/signin").permitAll()
+            .antMatchers("/app/zuul/signout").permitAll()
             .anyRequest()
             .authenticated();
     }
