@@ -54,8 +54,8 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
         //配置一个客户端使用password认证,下游服务只需要通过gateway-server进行代理就可以了
         clients.inMemory().withClient("gateway_client")
                 .secret("123456")
-                .accessTokenValiditySeconds(86400) //一天的过期时间
-                .refreshTokenValiditySeconds(100000)
+                .accessTokenValiditySeconds(86400)   // 60*60*24 一天的过期时间
+                .refreshTokenValiditySeconds(100000) //refresh_token比access_token多13600s,大概是3.7h
                 .authorizedGrantTypes("password", "refresh_token")
                 .scopes("all");
     }
