@@ -91,7 +91,7 @@ public class OAuth2CookieHelper {
      */
     private Cookie createTokenCookie(String cookieName, String tokenValue, boolean rememberMe) {
         int maxAge = -1;
-        //cookie的存活时间就是token的过期时间
+        //cookie的存活时间就是token的过期时间。exp是指过期时间点。
         Integer exp = getClaim(tokenValue, AccessTokenConverter.EXP, Integer.class);
         if (exp != null) {
             int now = (int) (System.currentTimeMillis() / 1000L);
