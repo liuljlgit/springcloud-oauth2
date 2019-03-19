@@ -174,6 +174,15 @@ public class OAuth2CookieHelper {
     }
 
     /**
+     * 得到refresh_token
+     * @param request
+     * @return
+     */
+    public static Cookie getRefreshTokenCookie(HttpServletRequest request) {
+        return getCookie(request, REFRESH_TOKEN_COOKIE);
+    }
+
+    /**
      * 清除cookie
      * @param httpServletRequest
      * @param httpServletResponse

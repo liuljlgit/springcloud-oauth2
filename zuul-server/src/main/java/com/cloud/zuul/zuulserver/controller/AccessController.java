@@ -4,17 +4,17 @@ import com.alibaba.fastjson.JSONObject;
 import com.cloud.common.exception.BusiException;
 import com.cloud.common.webcomm.RespEntity;
 import com.cloud.zuul.zuulserver.security.OAuth2CookieHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.Cookie;
@@ -31,6 +31,8 @@ public class AccessController {
 
     @Autowired
     RestTemplate restTemplate;
+
+    private Logger log  = LoggerFactory.getLogger(AccessController.class);
 
     private OAuth2CookieHelper cookieHelper = new OAuth2CookieHelper();
 
@@ -70,6 +72,14 @@ public class AccessController {
         return RespEntity.ok(respBody);
     }
 
+    /**
+     * 注销登录，只是清空了cookie,但是token在redis还是存在的（后续也可以去掉）。
+     * @param reqEntity
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @PostMapping(value = "/signout")
     public String logout(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) throws Exception{
         Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(request);
@@ -80,6 +90,43 @@ public class AccessController {
         cookieHelper.clearCookies(request, response);
         return RespEntity.ok();
     }
+
+
+    /**
+     * 主动刷新refresh token（获取refresh token一般都是写在filter中的,此处只是为了测试）
+     * @param reqEntity
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    @PostMapping(value = "/refreshtoken")
+    public String refreshToken(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Cookie refreshTokenCookie = OAuth2CookieHelper.getRefreshTokenCookie(request);
+        if(Objects.isNull(refreshTokenCookie)){
+            throw new BusiException("refresh为空");
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.set("grant_type", "refresh_token");
+        params.set("refresh_token", refreshTokenCookie.getValue().trim());
+        params.set("client_id", "gateway_client");
+        params.set("client_secret", "123456");
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
+        ResponseEntity<OAuth2AccessToken> responseEntity = restTemplate.postForEntity("http://auth-server/oauth/token", entity, OAuth2AccessToken.class);
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new HttpClientErrorException(responseEntity.getStatusCode());
+        }
+        OAuth2AccessToken accessToken = responseEntity.getBody();
+        //把token设置到cookie中
+        cookieHelper.createCookies(request, accessToken, Boolean.FALSE,response);
+        //登录信息返回
+        Map<String,Object> map = accessToken.getAdditionalInformation();
+        JSONObject respBody = new JSONObject(map);
+        return RespEntity.ok(respBody);
+    }
+
 
     @PostMapping(value = "/testRestTemplate")
     public String testRestTemplate(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) {

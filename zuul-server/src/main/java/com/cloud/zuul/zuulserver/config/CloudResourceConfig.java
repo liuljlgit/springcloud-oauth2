@@ -35,6 +35,7 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
         http.authorizeRequests()
             .antMatchers("/app/zuul/signin").permitAll()
             .antMatchers("/app/zuul/signout").permitAll()
+                .antMatchers("/app/zuul/refreshtoken").permitAll()
             .anyRequest()
             .authenticated();
     }

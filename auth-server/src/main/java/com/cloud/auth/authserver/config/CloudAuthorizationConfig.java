@@ -70,7 +70,9 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
         endpoints.tokenStore(tokenStore)
                 .authenticationManager(authenticationManager)
                 .userDetailsService(userServiceDetail)
-                .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
+                .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST)
+                //该字段设置设置refresh token是否重复使用,true:reuse;false:no reuse.(就是说使用refresh token请求新token的时候是使用第一次生成的refresh token还是刷新后每次重新生成的token)
+                .reuseRefreshTokens(false);
         //加入jwt增强
         TokenEnhancerChain tokenEnhancerChain;
         if ( null != jwtAccessTokenConverter && null != jwtTokenEnhancer){
