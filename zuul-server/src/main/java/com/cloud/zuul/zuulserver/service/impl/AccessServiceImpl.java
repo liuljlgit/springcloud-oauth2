@@ -78,7 +78,7 @@ public class AccessServiceImpl implements IAccessService {
     public String refreshToken(HttpServletRequest request, HttpServletResponse response) {
         Cookie refreshTokenCookie = OAuth2CookieHelper.getRefreshTokenCookie(request);
         if(Objects.isNull(refreshTokenCookie)){
-            throw new BusiException("refresh为空");
+            throw new BusiException("请先登录!");
         }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
