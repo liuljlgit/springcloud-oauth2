@@ -19,7 +19,7 @@ public class SpringConfig {
      * @return access拦截器
      */
     @Bean
-    public AccessFilter accessFilter(@Qualifier("tokenStore") TokenStore tokenStore, OAuth2CookieHelper oAuth2CookieHelper, IAccessService accessService){
+    public AccessFilter accessFilter(TokenStore tokenStore, OAuth2CookieHelper oAuth2CookieHelper, IAccessService accessService){
         return new AccessFilter(tokenStore,oAuth2CookieHelper,accessService);
     }
 
