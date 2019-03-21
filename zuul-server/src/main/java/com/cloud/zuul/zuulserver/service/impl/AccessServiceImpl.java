@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -32,6 +33,9 @@ public class AccessServiceImpl implements IAccessService {
 
     @Autowired
     OAuth2CookieHelper oAuth2CookieHelper;
+
+    @Autowired
+    TokenStore tokenStore;
 
     @Autowired
     RestTemplate restTemplate;
@@ -70,6 +74,7 @@ public class AccessServiceImpl implements IAccessService {
             throw new BusiException("请先登录!");
         }
         String token = String.format("Bearer %s", cookie.getValue());
+        //OAuth2AccessToken oAuth2AccessToken = tokenStore.readAccessToken(token);
         oAuth2CookieHelper.clearCookies(request, response);
         return RespEntity.ok();
     }
