@@ -2,7 +2,6 @@ package com.cloud.zuul.zuulserver.config;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -22,8 +21,7 @@ public class JwtConfig {
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
 
-    @Bean
-    @Qualifier("tokenStore")
+    @Bean("tokenStore")
     public TokenStore getRedisTokenStore(){
         return new RedisTokenStore(redisConnectionFactory);
     }
