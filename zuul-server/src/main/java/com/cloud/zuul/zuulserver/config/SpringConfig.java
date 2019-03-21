@@ -3,6 +3,7 @@ package com.cloud.zuul.zuulserver.config;
 import com.cloud.zuul.zuulserver.filter.AccessFilter;
 import com.cloud.zuul.zuulserver.filter.CorsZuulFilter;
 import com.cloud.zuul.zuulserver.security.OAuth2CookieHelper;
+import com.cloud.zuul.zuulserver.service.inft.IAccessService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
@@ -18,8 +19,8 @@ public class SpringConfig {
      * @return access拦截器
      */
     @Bean
-    public AccessFilter accessFilter(@Qualifier("tokenStore") TokenStore tokenStore,OAuth2CookieHelper oAuth2CookieHelper){
-        return new AccessFilter(tokenStore,oAuth2CookieHelper);
+    public AccessFilter accessFilter(@Qualifier("tokenStore") TokenStore tokenStore, OAuth2CookieHelper oAuth2CookieHelper, IAccessService accessService){
+        return new AccessFilter(tokenStore,oAuth2CookieHelper,accessService);
     }
 
     /**

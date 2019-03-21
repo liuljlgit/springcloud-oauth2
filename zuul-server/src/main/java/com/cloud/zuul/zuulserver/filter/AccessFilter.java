@@ -1,6 +1,7 @@
 package com.cloud.zuul.zuulserver.filter;
 
 import com.cloud.zuul.zuulserver.security.OAuth2CookieHelper;
+import com.cloud.zuul.zuulserver.service.inft.IAccessService;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.slf4j.Logger;
@@ -26,10 +27,12 @@ public class AccessFilter extends ZuulFilter {
 
     private final  TokenStore tokenStore;
     private OAuth2CookieHelper oAuth2CookieHelper;
+    private IAccessService accessService;
 
-    public AccessFilter(TokenStore tokenStore, OAuth2CookieHelper oAuth2CookieHelper) {
+    public AccessFilter(TokenStore tokenStore, OAuth2CookieHelper oAuth2CookieHelper,IAccessService accessService) {
         this.tokenStore = tokenStore;
         this.oAuth2CookieHelper = oAuth2CookieHelper;
+        this.accessService = accessService;
     }
 
     /**
