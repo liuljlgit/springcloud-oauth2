@@ -132,5 +132,19 @@ public class SysCompanyCtrl{
         return RespEntity.ok();
     }
 
+    /**
+     * SysCompany 根据主键删除数据
+     * @return
+     * @throws Exception
+     */
+    @DeleteMapping(value = "/sysCompany/test2/{scId}")
+    public String test2(@PathVariable(value="scId") Long scId) throws  Exception{
+        if(Objects.isNull(scId)){
+            throw new BusiException("入参请求异常") ;
+        }
+        sysCompanyService.deleteSysCompany(scId);
+        return RespEntity.ok();
+    }
+
 }
 
