@@ -1,6 +1,7 @@
 package com.cloud.zuul.zuulserver.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,6 +19,7 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
+    @Qualifier("tokenServices")
     DefaultTokenServices tokenServices;
 
     @Value("${spring.application.name}")

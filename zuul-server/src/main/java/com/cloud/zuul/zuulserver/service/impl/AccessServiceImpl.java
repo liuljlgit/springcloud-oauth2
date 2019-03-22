@@ -8,8 +8,10 @@ import com.cloud.zuul.zuulserver.service.inft.IAccessService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -36,6 +38,10 @@ public class AccessServiceImpl implements IAccessService {
 
     @Autowired
     TokenStore tokenStore;
+
+    @Qualifier("tokenServices")
+    @Autowired
+    DefaultTokenServices tokenService;
 
     @Autowired
     RestTemplate restTemplate;
@@ -73,8 +79,9 @@ public class AccessServiceImpl implements IAccessService {
         if ( null == cookie){
             throw new BusiException("请先登录!");
         }
-        String token = String.format("Bearer %s", cookie.getValue());
-        //OAuth2AccessToken oAuth2AccessToken = tokenStore.readAccessToken(token);
+        String token = cookie.getValue();
+        OAuth2AccessToken oAuth2AccessToken = tokenStore.readAccessToken(token);
+        //tokenService.revokeToken(token);
         oAuth2CookieHelper.clearCookies(request, response);
         return RespEntity.ok();
     }
