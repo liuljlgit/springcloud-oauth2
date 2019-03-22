@@ -8,11 +8,8 @@ import com.cloud.zuul.zuulserver.service.inft.IAccessService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -35,13 +32,6 @@ public class AccessServiceImpl implements IAccessService {
 
     @Autowired
     OAuth2CookieHelper oAuth2CookieHelper;
-
-    @Autowired
-    TokenStore tokenStore;
-
-    @Qualifier("tokenServices")
-    @Autowired
-    DefaultTokenServices tokenService;
 
     @Autowired
     RestTemplate restTemplate;
@@ -80,8 +70,14 @@ public class AccessServiceImpl implements IAccessService {
             throw new BusiException("请先登录!");
         }
         String token = cookie.getValue();
-        OAuth2AccessToken oAuth2AccessToken = tokenStore.readAccessToken(token);
-        //tokenService.revokeToken(token);
+        //封装请求/oauth/token
+        HttpHeaders reqHeaders = new HttpHeaders();
+        //请求设置成表单模式，否则无法进行请求
+        reqHeaders.setContentType(MediaType.APPLICATION_JSON);
+        MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
+        formParams.set("accessToken", token);
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(formParams, reqHeaders);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://auth-server/users/logout", entity, String.class);
         oAuth2CookieHelper.clearCookies(request, response);
         return RespEntity.ok();
     }

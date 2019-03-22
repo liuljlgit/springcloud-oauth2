@@ -11,6 +11,7 @@
 			<list>
 				<value>/oauth/**</value>
 				<value>/users/register</value>
+				<value>/users/logout</value>
 			</list>
 		</property>
 	</bean>

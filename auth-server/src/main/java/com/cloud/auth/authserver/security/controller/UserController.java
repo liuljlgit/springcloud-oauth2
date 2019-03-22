@@ -8,7 +8,10 @@ import com.cloud.common.webcomm.RespEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,6 +26,10 @@ public class UserController {
 
     @Autowired
     ISysUserService sysUserService;
+
+    @Autowired
+    @Qualifier("cloudTokenServices")
+    DefaultTokenServices tokenServices;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -54,6 +61,19 @@ public class UserController {
         sysUser.setStatus((byte)1);
         sysUser.setStatusTime(new Date());
         sysUserService.addSysUser(sysUser);
+        return RespEntity.ok();
+    }
+
+    /**
+     * 注销
+     * @param reqEntity
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/logout",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public String logout(@RequestBody JSONObject reqEntity) throws  Exception {
+        String accessToken = reqEntity.getJSONArray("accessToken").toJavaList(String.class).get(0);
+        tokenServices.revokeToken(accessToken);
         return RespEntity.ok();
     }
 }
