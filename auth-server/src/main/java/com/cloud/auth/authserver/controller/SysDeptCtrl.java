@@ -1,16 +1,15 @@
 package com.cloud.auth.authserver.controller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.cloud.auth.authserver.entity.SysDept;
-import com.cloud.auth.authserver.service.inft.ISysDeptService;
-import com.cloud.auth.authserver.webentity.SysDeptResp;
-import com.cloud.common.complexquery.QueryExample;
-import com.cloud.common.exception.BusiException;
-import com.cloud.common.webcomm.RespEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
+import com.cloud.common.exception.BusiException;
+import com.alibaba.fastjson.JSONObject;
+import com.cloud.common.complexquery.QueryExample;
+import com.cloud.common.webcomm.RespEntity;
+import java.util.*;
+import com.cloud.auth.authserver.service.inft.ISysDeptService;
+import com.cloud.auth.authserver.entity.SysDept;
+import com.cloud.auth.authserver.webentity.SysDeptResp;
 
 /**
  * SysDeptCtrl 控制层方法
@@ -116,10 +115,6 @@ public class SysDeptCtrl{
         }
         sysDeptService.deleteSysDept(sdId);
         return RespEntity.ok();
-    }
-
-    public void test1(){
-
     }
 
 
