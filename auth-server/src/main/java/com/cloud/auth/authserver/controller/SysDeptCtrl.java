@@ -118,10 +118,6 @@ public class SysDeptCtrl{
         return RespEntity.ok();
     }
 
-    public void test1(){
-
-    }
-
 
 }
 
