@@ -118,6 +118,10 @@ public class SysCompanyCtrl{
         return RespEntity.ok();
     }
 
+    public void test1(){
+
+    }
+
 
 }
 
