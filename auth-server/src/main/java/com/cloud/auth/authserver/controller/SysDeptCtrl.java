@@ -122,6 +122,10 @@ public class SysDeptCtrl{
 
     }
 
+    public void test3(){
+
+    }
+
 
 }
 

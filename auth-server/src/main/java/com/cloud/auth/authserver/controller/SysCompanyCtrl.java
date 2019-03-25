@@ -126,6 +126,9 @@ public class SysCompanyCtrl{
 
     }
 
+    public void test3(){
+
+    }
 
 }
 
