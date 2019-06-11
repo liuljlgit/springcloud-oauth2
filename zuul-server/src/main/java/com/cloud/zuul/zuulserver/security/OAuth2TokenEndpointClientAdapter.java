@@ -77,7 +77,7 @@ public abstract class OAuth2TokenEndpointClientAdapter implements OAuth2TokenEnd
         MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
         formParams.set("access_token", access_token);
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(formParams, reqHeaders);
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://auth-server/oauth/logout", entity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://auth-server/users/logout", entity, String.class);
     }
 
     /**

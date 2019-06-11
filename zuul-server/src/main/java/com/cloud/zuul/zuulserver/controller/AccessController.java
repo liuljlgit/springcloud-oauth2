@@ -70,7 +70,7 @@ public class AccessController {
      * @param response
      * @return
      */
-    @PostMapping(value = "/logout")
+    @PostMapping(value = "/signout")
     public String logout(HttpServletRequest request, HttpServletResponse response) throws Exception{
         authenticationService.logout(request, response);
         return RespEntity.ok();
