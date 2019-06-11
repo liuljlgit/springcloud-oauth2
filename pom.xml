@@ -22,8 +22,6 @@
 		<module>eureka-server</module>
 		<module>auth-server</module>
 		<module>zuul-server</module>
-		<module>kafka-server</module>
-		<module>lcn-server</module>
 		<module>data-server</module>
 	</modules>
 
