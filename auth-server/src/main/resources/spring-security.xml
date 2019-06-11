@@ -9,9 +9,11 @@
 		<property name="antMatchersList" >
 			<!-- 配置免登录可以访问的资源-->
 			<list>
-				<value>/oauth/**</value>
+				<value>/**</value>
+<!--				<value>/oauth/**</value>
+				<value>/users/current</value>
 				<value>/users/register</value>
-				<value>/users/logout</value>
+				<value>/users/logout</value>-->
 			</list>
 		</property>
 	</bean>

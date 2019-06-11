@@ -42,6 +42,9 @@ public abstract class OAuth2TokenEndpointClientAdapter implements OAuth2TokenEnd
         formParams.set("username", username);
         formParams.set("password", password);
         formParams.set("grant_type", "password");
+        formParams.set("scope", "all");
+        formParams.set("client_id", "gateway_client");
+        formParams.set("client_secret", "123456");
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(formParams, reqHeaders);
         log.debug("contacting OAuth2 token endpoint to login user: {}", username);
         ResponseEntity<OAuth2AccessToken> responseEntity;
