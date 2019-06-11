@@ -1,18 +1,24 @@
 package com.cloud.zuul.zuulserver.filter;
 
-import com.cloud.zuul.zuulserver.security.OAuth2CookieHelper;
-import com.cloud.zuul.zuulserver.service.inft.IAccessService;
+import com.cloud.zuul.zuulserver.security.Cookie.CookieCollection;
+import com.cloud.zuul.zuulserver.security.Cookie.CookiesHttpServletRequestWrapper;
+import com.cloud.zuul.zuulserver.security.Cookie.OAuth2CookieHelper;
+import com.cloud.zuul.zuulserver.security.OAuth2AuthenticationService;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2RefreshToken;
+import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
+import org.springframework.security.oauth2.common.exceptions.UnauthorizedClientException;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Objects;
 
 /**
  * 资源过滤器
@@ -21,18 +27,18 @@ import java.util.Objects;
  */
 public class AccessFilter extends ZuulFilter {
 
-    private static Logger logger = LoggerFactory.getLogger(AccessFilter.class);
+    private final Logger log = LoggerFactory.getLogger(AccessFilter.class);
 
     private static final int REFRESH_WINDOW_SECS = 13600; //这个值是认证服务器中auth-server CloudAuthorizationConfig类中配置的 refresh_token的过期时间减去 access_token的过期时间(单位为秒)
 
-    private final  TokenStore tokenStore;
+    private final OAuth2AuthenticationService authenticationService;
+    private final TokenStore tokenStore;
     private OAuth2CookieHelper oAuth2CookieHelper;
-    private IAccessService accessService;
 
-    public AccessFilter(TokenStore tokenStore, OAuth2CookieHelper oAuth2CookieHelper,IAccessService accessService) {
+    public AccessFilter(TokenStore tokenStore, OAuth2CookieHelper oAuth2CookieHelper,OAuth2AuthenticationService authenticationService) {
         this.tokenStore = tokenStore;
         this.oAuth2CookieHelper = oAuth2CookieHelper;
-        this.accessService = accessService;
+        this.authenticationService = authenticationService;
     }
 
     /**
@@ -50,7 +56,7 @@ public class AccessFilter extends ZuulFilter {
      */
     @Override
     public int filterOrder() {
-        return 0;
+        return 1;
     }
 
     /**
@@ -62,36 +68,79 @@ public class AccessFilter extends ZuulFilter {
         return true;
     }
 
-    /**
-     * 进行拦截
-     * 1.当access_token == null && refresh == null，证明cookie已经过期，返回401未登录异常。
-     * 2.当access_token!=null && refresh_token == null,应该是cookie异常了,直接报token不合法token异常。
-     * 3.当access_token != null && refresh_token!=null
-     *      3.1）先判断当access_token是否过期，如果没有过期，给请求头部加上Authorization,放行;
-     *      3.2）如果access_token过期,判断refresh_token是否过期，如果未过期，请求新access_token，如果过期，返回401未登录;
-     * 4.access_token == null && refresh_token!=null，判断refresh_token是否过期，如果未过期，请求新access_token，如果过期，返回401未登录;
-     * 5.注意登出的情况：access_token和refresh_token保存在redis中,像flushdb等类似操作可能会造成登出的情况。反正只要是redis中 refresh_token不存在,那么就是已经登出了。
-     * @return
-     */
     @Override
     public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequest httpServletRequest = ctx.getRequest();
         HttpServletResponse httpServletResponse = ctx.getResponse();
-        try{
-            //得到cookie中的token
-            /*Cookie accessTokenCookie = OAuth2CookieHelper.getAccessTokenCookie(httpServletRequest);
-            Cookie refreshTokenCookie = OAuth2CookieHelper.getRefreshTokenCookie(httpServletRequest);*/
+        try {
+            httpServletRequest = refreshTokensIfExpiring(httpServletRequest, httpServletResponse);
+            Boolean ifOtherLogOut = false;
+            if ( httpServletRequest instanceof CookiesHttpServletRequestWrapper){
+                ifOtherLogOut = ((CookiesHttpServletRequestWrapper) httpServletRequest).getIfOtherLoginOut();
+            }
             Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(httpServletRequest);
-            if(Objects.nonNull(cookie)){
+            if(ifOtherLogOut){
+                ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+            }else{
                 String token = String.format("Bearer %s", cookie.getValue());
                 ctx.addZuulRequestHeader("Authorization", token);
             }
-        }catch (Exception ex){
-            logger.warn("Security exception: could not refresh tokens", ex);
-            //清除cookie中的token信息
+        } catch (Exception ex) {
+            log.warn("Security exception: could not refresh tokens", ex);
+            authenticationService.stripTokens(httpServletRequest);
         }
         return null;
+    }
+
+    /**
+     * Refresh the access and refresh tokens if they are about to expire.
+     *
+     * @param httpServletRequest  the servlet request holding the current cookies. If no refresh cookie is present,
+     *                            then we are out of luck.
+     * @param httpServletResponse the servlet response that gets the new set-cookie headers, if they had to be
+     *                            refreshed.
+     * @return a new request to use downstream that contains the new cookies, if they had to be refreshed.
+     * @throws InvalidTokenException if the tokens could not be refreshed.
+     */
+    public HttpServletRequest refreshTokensIfExpiring(HttpServletRequest httpServletRequest, HttpServletResponse
+            httpServletResponse) throws Exception{
+        HttpServletRequest newHttpServletRequest = httpServletRequest;
+
+        //get access token from cookie
+        Cookie accessTokenCookie = OAuth2CookieHelper.getAccessTokenCookie(httpServletRequest);
+        //判断刷新token在redis存不存在,如果不存在，说明其它端的退出后，把redis中的token删除了.
+        Cookie refreshCookie = OAuth2CookieHelper.getRefreshTokenCookie(httpServletRequest);
+        OAuth2RefreshToken oAuth2RefreshToken;
+        if ( null != refreshCookie){
+            oAuth2RefreshToken = tokenStore.readRefreshToken(refreshCookie.getValue());
+            if ( null == oAuth2RefreshToken){
+                oAuth2CookieHelper.clearCookies(httpServletRequest,httpServletResponse);
+                CookieCollection requestCookies = new CookieCollection(httpServletRequest.getCookies());
+                CookiesHttpServletRequestWrapper cookiesHttpServletRequestWrapper = new CookiesHttpServletRequestWrapper(httpServletRequest, requestCookies.toArray());
+                cookiesHttpServletRequestWrapper.setIfOtherLoginOut(true);
+                return cookiesHttpServletRequestWrapper;
+            }
+        }
+
+        if (mustRefreshToken(accessTokenCookie)) {        //we either have no access token, or it is expired, or it is about to expire
+            //get the refresh token cookie and, if present, request new tokens
+            //Cookie refreshCookie = OAuth2CookieHelper.getRefreshTokenCookie(httpServletRequest);
+            if (refreshCookie != null) {
+                try {
+                    newHttpServletRequest = authenticationService.refreshToken(httpServletRequest, httpServletResponse, refreshCookie);
+                } catch (HttpClientErrorException ex) {
+                    throw new UnauthorizedClientException("could not refresh OAuth2 token", ex);
+                }
+            } else if (accessTokenCookie != null) {
+                log.warn("access token found, but no refresh token, stripping them all");
+                OAuth2AccessToken token = tokenStore.readAccessToken(accessTokenCookie.getValue());
+                if (token.isExpired()) {
+                    throw new InvalidTokenException("access token has expired, but there's no refresh token");
+                }
+            }
+        }
+        return newHttpServletRequest;
     }
 
     /**

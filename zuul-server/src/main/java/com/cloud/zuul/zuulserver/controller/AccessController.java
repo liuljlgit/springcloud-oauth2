@@ -1,16 +1,26 @@
 package com.cloud.zuul.zuulserver.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.cloud.zuul.zuulserver.service.inft.IAccessService;
+import com.cloud.common.exception.BusiException;
+import com.cloud.common.webcomm.CodeEnum;
+import com.cloud.common.webcomm.RespEntity;
+import com.cloud.zuul.zuulserver.security.OAuth2AuthenticationService;
+import com.cloud.zuul.zuulserver.security.TokenAuthenticationReq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 进行登录和登出操作
@@ -18,46 +28,52 @@ import javax.servlet.http.HttpServletResponse;
 @RestController
 public class AccessController {
 
-    private Logger logger  = LoggerFactory.getLogger(AccessController.class);
+    private Logger log  = LoggerFactory.getLogger(AccessController.class);
 
     @Autowired
-    IAccessService accessService;
+    private OAuth2AuthenticationService authenticationService;
 
     /**
      * 用户登录（需加密传输）
-     * @param reqEntity
-     * @param request
-     * @param response
-     * @return
-     */
-    @PostMapping(value = "/signin")
-    public String createAuthenticationToken(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        return accessService.createAuthenticationToken(reqEntity.getString("username"),reqEntity.getString("password"),request,response);
-    }
-
-    /**
-     * 注销登录，只是清空了cookie,但是token在redis还是存在的（后续也可以去掉）。
-     * @param request
-     * @param response
-     * @return
-     */
-    @PostMapping(value = "/signout")
-    public String logout(HttpServletRequest request, HttpServletResponse response) {
-        return accessService.logout(request,response);
-    }
-
-
-    /**
-     * 主动刷新refresh token（获取refresh token一般都是写在filter中的,此处只是为了测试）
-     * @param reqEntity
+     * @param tokenAuthenticationReq
      * @param request
      * @param response
      * @return
      * @throws Exception
      */
-    @PostMapping(value = "/refreshtoken")
-    public String refreshToken(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response){
-        return accessService.refreshToken(request,response);
+    @PostMapping(value = "/signin")
+    public String createAuthenticationToken(@RequestBody TokenAuthenticationReq tokenAuthenticationReq, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if(StringUtils.isEmpty(tokenAuthenticationReq.getUsername()) || StringUtils.isEmpty(tokenAuthenticationReq.getPassword())){
+            throw new BusiException("用户不存在或密码错误");
+        }
+        Map<String, String> params = new HashMap<>();
+        params.put("username",tokenAuthenticationReq.getUsername());
+        params.put("password", tokenAuthenticationReq.getPassword());
+        try {
+            ResponseEntity<OAuth2AccessToken> accessTokenResponseEntity = authenticationService.authenticate(request, response, params);
+            if (Objects.isNull(accessTokenResponseEntity)){
+                return RespEntity.commonResp(CodeEnum.EXEC_ERROR.getCode(),"登录失败",null);
+            }
+            OAuth2AccessToken auth2AccessToken = accessTokenResponseEntity.getBody();
+            Map<String,Object> map = auth2AccessToken.getAdditionalInformation();
+            JSONObject respBody = new JSONObject(map);
+            return RespEntity.commonResp(CodeEnum.EXEC_OK.getCode(),"登录成功",respBody);
+        }catch (Exception e){
+            log.error(e.getMessage(),e);
+            return RespEntity.commonResp(CodeEnum.EXEC_ERROR.getCode(),"登录失败",null);
+        }
+    }
+
+    /**
+     * 注销登录
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping(value = "/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) throws Exception{
+        authenticationService.logout(request, response);
+        return RespEntity.ok();
     }
 
 }

@@ -9,11 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.Date;
 import java.util.Objects;
@@ -65,15 +65,17 @@ public class UserController {
     }
 
     /**
-     * 注销
-     * @param reqEntity
+     * 注销用户登录
+     * @param request
      * @return
-     * @throws Exception
      */
-    @RequestMapping(value = "/logout",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String logout(@RequestBody JSONObject reqEntity) throws  Exception {
-        String accessToken = reqEntity.getJSONArray("accessToken").toJavaList(String.class).get(0);
-        tokenServices.revokeToken(accessToken);
+    @RequestMapping(value = "/logout",method = RequestMethod.POST)
+    public String revokeToken(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+        if (authorization != null && authorization.contains("Bearer")){
+            String accessToken = authorization.substring("Bearer".length()+1);
+            tokenServices.revokeToken(accessToken);
+        }
         return RespEntity.ok();
     }
 }
