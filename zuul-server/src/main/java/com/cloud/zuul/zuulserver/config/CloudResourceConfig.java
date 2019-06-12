@@ -22,7 +22,6 @@ import java.io.IOException;
 
 /**
  * 资源服务器
- * 注意:只是保护网关的资源
  */
 @Configuration
 @EnableResourceServer
