@@ -83,8 +83,10 @@ public class AccessFilter extends ZuulFilter {
             //如果其他端已经注销了,本地也注销（看业务情况，也可以其他端注销的时候只清除本地的cookie,这样子不会影响其他端）
             Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(httpServletRequest);
             if(ifOtherLogOut){
-                ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
                 authenticationService.logout(httpServletRequest, httpServletResponse);
+                ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+                ctx.setResponseBody("用户尚未登录");
+                ctx.setSendZuulResponse(false);
             }
             if((null == ifOtherLogOut || Boolean.FALSE.equals(ifOtherLogOut)) && Objects.nonNull(cookie)){
                 String token = String.format("Bearer %s", cookie.getValue());
