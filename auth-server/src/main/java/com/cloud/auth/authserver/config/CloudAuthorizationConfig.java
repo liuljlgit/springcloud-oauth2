@@ -1,5 +1,6 @@
 package com.cloud.auth.authserver.config;
 
+import com.cloud.auth.authserver.security.exception.CustomWebResponseExceptionTranslator;
 import com.cloud.auth.authserver.security.login.UserServiceDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,6 +46,12 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
     private TokenEnhancer jwtTokenEnhancer;
 
     /**
+     * 自定义异常处理
+     */
+    @Autowired
+    private CustomWebResponseExceptionTranslator customWebResponseExceptionTranslator;
+
+    /**
      * 配置客户端信息
      * @param clients
      * @throws Exception
@@ -83,6 +90,8 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
             tokenEnhancerChain.setTokenEnhancers(enhancers);
             endpoints.tokenEnhancer(tokenEnhancerChain);
         }
+        //异常处理
+        endpoints.exceptionTranslator(customWebResponseExceptionTranslator);
     }
 
     /**
