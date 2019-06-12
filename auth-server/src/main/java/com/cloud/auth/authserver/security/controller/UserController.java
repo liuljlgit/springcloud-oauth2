@@ -34,7 +34,12 @@ public class UserController {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @RequestMapping(value = "/current", method = RequestMethod.GET)
+    /**
+     * 用户信息校验
+     * @param principal
+     * @return
+     */
+    @RequestMapping(value = "/check", method = RequestMethod.GET)
     public Principal getUser(Principal principal) {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>>");
         logger.info(principal.toString());
