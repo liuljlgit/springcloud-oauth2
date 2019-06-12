@@ -108,13 +108,12 @@ public class OAuth2CookieHelper {
     /**
      * Create cookies using the provided values.
      *
-     * @param request     the request we are handling.
-     * @param accessToken the access token and enclosed refresh token for our cookies.
-     * @param rememberMe  whether the user had originally checked "remember me".
-     * @param result      will get the resulting cookies set.
+     * @param request           the request we are handling.
+     * @param accessToken       the access token and enclosed refresh token for our cookies.
+     * @param rememberMe        whether the user had originally checked "remember me".
      */
-    public void createCookies(HttpServletRequest request, OAuth2AccessToken accessToken, boolean rememberMe,
-                              OAuth2Cookies result, HttpServletResponse response) {
+    public void createCookies(HttpServletRequest request, OAuth2AccessToken accessToken, boolean rememberMe, HttpServletResponse response) {
+        OAuth2Cookies oAuth2Cookies = new OAuth2Cookies();
         String domain = oAuth2Properties.getWebClientConfiguration().getCookieDomain();
         log.debug("creating cookies for domain {}", domain);
 
@@ -126,23 +125,25 @@ public class OAuth2CookieHelper {
         Cookie refreshTokenCookie = createTokenCookie(REFRESH_TOKEN_COOKIE,refreshToken.getValue(), rememberMe);
         setCookieProperties(refreshTokenCookie, request.isSecure(), domain);
         log.debug("created refresh token cookie '{}', age: {}", refreshTokenCookie.getName(), refreshTokenCookie.getMaxAge());
-        result.setCookies(accessTokenCookie, refreshTokenCookie);
-        writeOauth2AccessToken2Resp("login-account",accessToken,response);
-
+        //把accessTokenCookie和refreshTokenCookie写入到response中
+        oAuth2Cookies.setCookies(accessTokenCookie, refreshTokenCookie);
+        oAuth2Cookies.addCookiesTo(response);
+        //additional-info Cookie写入到response中
+        writeAdditionalInfo2Cookie("additional-info",accessToken,response);
     }
 
-    private void writeOauth2AccessToken2Resp(String cookieName,OAuth2AccessToken oauth2AccessToken,HttpServletResponse response) {
+    private void writeAdditionalInfo2Cookie(String cookieName,OAuth2AccessToken oauth2AccessToken,HttpServletResponse response) {
         String domain = oAuth2Properties.getWebClientConfiguration().getCookieDomain();
-        JSONObject jsonObject = new JSONObject(oauth2AccessToken.getAdditionalInformation());
-        String resultMsg = "";
+        JSONObject additionalInfoObj = new JSONObject(oauth2AccessToken.getAdditionalInformation());
+        String additionalInfo = "";
         try{
-            resultMsg = URLEncoder.encode(jsonObject.toJSONString(),"utf-8");
+            additionalInfo = URLEncoder.encode(additionalInfoObj.toJSONString(),"utf-8");
         }catch (Exception ex){
             log.error(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())+",写登录信息到返回response失败"  + ex.getMessage());
         }
 
-        Cookie loginAccountCookie = new Cookie(cookieName,resultMsg);
-        loginAccountCookie.setPath("/");
+        Cookie additionalInfoCookie = new Cookie(cookieName,additionalInfo);
+        additionalInfoCookie.setPath("/");
         //设置下过期时间为刷新token的过期时间
         Integer exp = getClaim(oauth2AccessToken.getRefreshToken().getValue(), AccessTokenConverter.EXP, Integer.class);
         int maxAge = -1;
@@ -150,16 +151,11 @@ public class OAuth2CookieHelper {
             int now = (int) (System.currentTimeMillis() / 1000L);
             maxAge = exp - now;
         }
-        loginAccountCookie.setMaxAge(maxAge);
+        additionalInfoCookie.setMaxAge(maxAge);
         if (org.apache.commons.lang.StringUtils.isNotBlank(domain)){
-            loginAccountCookie.setDomain(domain);
+            additionalInfoCookie.setDomain(domain);
         }
-        response.addCookie(loginAccountCookie);
-    }
-
-    private Cookie createOtherCookie(String cookieName, String otherName, String tokenValue){
-        String otherValue = getClaim(tokenValue,otherName,String.class);
-        return  new Cookie(cookieName,otherValue);
+        response.addCookie(additionalInfoCookie);
     }
 
     /**
@@ -176,9 +172,9 @@ public class OAuth2CookieHelper {
             int now = (int) (System.currentTimeMillis() / 1000L);
             maxAge = exp - now;
         }
-        Cookie refreshTokenCookie = new Cookie(cookieName, tokenValue);
-        refreshTokenCookie.setMaxAge(maxAge);
-        return refreshTokenCookie;
+        Cookie tokenCookie = new Cookie(cookieName, tokenValue);
+        tokenCookie.setMaxAge(maxAge);
+        return tokenCookie;
     }
 
     /**

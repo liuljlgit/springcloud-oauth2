@@ -71,9 +71,7 @@ public class OAuth2AuthenticationService {
         String password = params.get("password");
         boolean rememberMe = Boolean.valueOf(params.get("rememberMe"));
         OAuth2AccessToken accessToken = authorizationClient.sendPasswordGrant(username, password);
-        OAuth2Cookies cookies = new OAuth2Cookies();
-        cookieHelper.createCookies(request, accessToken, rememberMe, cookies,response);
-        cookies.addCookiesTo(response);
+        cookieHelper.createCookies(request, accessToken, rememberMe,response);
         if (log.isDebugEnabled()) {
             log.debug("successfully authenticated user {}", params.get("username"));
         }
@@ -109,9 +107,7 @@ public class OAuth2AuthenticationService {
                 String refreshCookieValue = OAuth2CookieHelper.getRefreshTokenValue(refreshCookie);
                 OAuth2AccessToken accessToken = authorizationClient.sendRefreshGrant(refreshCookieValue);
                 boolean rememberMe = OAuth2CookieHelper.isRememberMe(refreshCookie);
-                cookieHelper.createCookies(request, accessToken, rememberMe, cookies,response);
-                //add cookies to response to update browser
-                cookies.addCookiesTo(response);
+                cookieHelper.createCookies(request, accessToken, rememberMe,response);
             } else {
                 log.debug("reusing cached refresh_token grant");
             }
