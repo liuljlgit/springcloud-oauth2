@@ -8,6 +8,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
@@ -75,21 +76,20 @@ public class AccessFilter extends ZuulFilter {
         HttpServletResponse httpServletResponse = ctx.getResponse();
         try {
             httpServletRequest = refreshTokensIfExpiring(httpServletRequest, httpServletResponse);
-/*            Boolean ifOtherLogOut = false;
+            Boolean ifOtherLogOut = false;
             if ( httpServletRequest instanceof CookiesHttpServletRequestWrapper){
                 ifOtherLogOut = ((CookiesHttpServletRequestWrapper) httpServletRequest).getIfOtherLoginOut();
-            }*/
+            }
+            //如果其他端已经注销了,本地也注销（看业务情况，也可以其他端注销的时候只清除本地的cookie,这样子不会影响其他端）
             Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(httpServletRequest);
-            if(Objects.nonNull(cookie)){
+            if(ifOtherLogOut){
+                ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+                authenticationService.logout(httpServletRequest, httpServletResponse);
+            }
+            if((null == ifOtherLogOut || Boolean.FALSE.equals(ifOtherLogOut)) && Objects.nonNull(cookie)){
                 String token = String.format("Bearer %s", cookie.getValue());
                 ctx.addZuulRequestHeader("Authorization", token);
             }
-/*            if(ifOtherLogOut){
-                ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
-            }else{
-                String token = String.format("Bearer %s", cookie.getValue());
-                ctx.addZuulRequestHeader("Authorization", token);
-            }*/
         } catch (Exception ex) {
             log.warn("Security exception: could not refresh tokens", ex);
             authenticationService.stripTokens(httpServletRequest);
