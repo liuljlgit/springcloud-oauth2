@@ -8,7 +8,6 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
@@ -19,6 +18,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 
 /**
  * 资源过滤器
@@ -75,17 +75,21 @@ public class AccessFilter extends ZuulFilter {
         HttpServletResponse httpServletResponse = ctx.getResponse();
         try {
             httpServletRequest = refreshTokensIfExpiring(httpServletRequest, httpServletResponse);
-            Boolean ifOtherLogOut = false;
+/*            Boolean ifOtherLogOut = false;
             if ( httpServletRequest instanceof CookiesHttpServletRequestWrapper){
                 ifOtherLogOut = ((CookiesHttpServletRequestWrapper) httpServletRequest).getIfOtherLoginOut();
-            }
+            }*/
             Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(httpServletRequest);
-            if(ifOtherLogOut){
+            if(Objects.nonNull(cookie)){
+                String token = String.format("Bearer %s", cookie.getValue());
+                ctx.addZuulRequestHeader("Authorization", token);
+            }
+/*            if(ifOtherLogOut){
                 ctx.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
             }else{
                 String token = String.format("Bearer %s", cookie.getValue());
                 ctx.addZuulRequestHeader("Authorization", token);
-            }
+            }*/
         } catch (Exception ex) {
             log.warn("Security exception: could not refresh tokens", ex);
             authenticationService.stripTokens(httpServletRequest);
