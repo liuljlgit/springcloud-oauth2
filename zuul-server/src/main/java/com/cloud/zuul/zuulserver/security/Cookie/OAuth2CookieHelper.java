@@ -31,7 +31,7 @@ public class OAuth2CookieHelper {
     /**
      * 登录用户信息
      */
-    public static final String ACCESS_LOGIN_ACCOUNT = "login-account";
+    public static final String ACCESS_ADDITIONAL_INFO = "additional-info";
     /**
      * Name of the access token cookie.
      */
@@ -49,7 +49,7 @@ public class OAuth2CookieHelper {
      * The names of the Cookies we set.
      */
     private static final List<String> COOKIE_NAMES = Arrays.asList(ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE,
-        SESSION_TOKEN_COOKIE, ACCESS_LOGIN_ACCOUNT);
+        SESSION_TOKEN_COOKIE, ACCESS_ADDITIONAL_INFO);
 
     /**
      * Number of seconds to expire refresh token cookies before the enclosed token expires.
