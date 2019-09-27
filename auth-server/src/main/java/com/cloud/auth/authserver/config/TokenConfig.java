@@ -66,7 +66,7 @@ public class TokenConfig {
         DefaultTokenServices tokenServices = new DefaultTokenServices();
         tokenServices.setTokenStore(getRedisTokenStore());
         tokenServices.setSupportRefreshToken(true);
-        tokenServices.setReuseRefreshToken(false);
+        tokenServices.setReuseRefreshToken(false); //该字段设置设置refresh token是否重复使用,true:reuse;false:no reuse.(就是说使用refresh token请求新token的时候是使用第一次生成的refresh token还是刷新后每次重新生成的token)
         tokenServices.setClientDetailsService(clientDetailsService);
 
         List<TokenEnhancer> enhancers = new ArrayList<>();

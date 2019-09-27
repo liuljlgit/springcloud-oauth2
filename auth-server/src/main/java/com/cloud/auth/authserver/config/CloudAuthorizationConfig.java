@@ -11,13 +11,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.TokenEnhancer;
-import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 
 /**
  * 认证服务器
@@ -26,23 +20,14 @@ import java.util.List;
 @EnableAuthorizationServer
 public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapter {
 
-    @Autowired
     @Qualifier("cloudAuthenticationManager")
     AuthenticationManager authenticationManager;
 
     @Autowired
-    TokenStore tokenStore;
-
-    @Autowired
     UserServiceDetail userServiceDetail;
 
-    @Autowired(required = false)
-
-    private JwtAccessTokenConverter jwtAccessTokenConverter;
-
-    @Autowired(required = false)
-    @Qualifier("jwtTokenEnhancer")
-    private TokenEnhancer jwtTokenEnhancer;
+    @Autowired
+    DefaultTokenServices cloudTokenServices;
 
     /**
      * 配置客户端信息
@@ -67,22 +52,10 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
      */
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.tokenStore(tokenStore)
-                .authenticationManager(authenticationManager)
+        endpoints.authenticationManager(authenticationManager)
                 .userDetailsService(userServiceDetail)
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST)
-                //该字段设置设置refresh token是否重复使用,true:reuse;false:no reuse.(就是说使用refresh token请求新token的时候是使用第一次生成的refresh token还是刷新后每次重新生成的token)
-                .reuseRefreshTokens(false);
-        //加入jwt增强
-        TokenEnhancerChain tokenEnhancerChain;
-        if ( null != jwtAccessTokenConverter && null != jwtTokenEnhancer){
-            tokenEnhancerChain = new TokenEnhancerChain();
-            List<TokenEnhancer> enhancers = new ArrayList<>();
-            enhancers.add(jwtTokenEnhancer);//这个必须在前面
-            enhancers.add(jwtAccessTokenConverter);
-            tokenEnhancerChain.setTokenEnhancers(enhancers);
-            endpoints.tokenEnhancer(tokenEnhancerChain);
-        }
+                .tokenServices(cloudTokenServices);
     }
 
     /**

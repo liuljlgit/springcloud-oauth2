@@ -1,16 +1,21 @@
 package com.cloud.zuul.zuulserver.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cloud.zuul.zuulserver.security.OAuth2CookieHelper;
 import com.cloud.zuul.zuulserver.service.inft.IAccessService;
+import com.cloud.zuul.zuulserver.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 
 /**
  * 进行登录和登出操作
@@ -58,6 +63,16 @@ public class AccessController {
     @PostMapping(value = "/refreshtoken")
     public String refreshToken(@RequestBody JSONObject reqEntity, HttpServletRequest request, HttpServletResponse response){
         return accessService.refreshToken(request,response);
+    }
+
+    @GetMapping(value = "/testclaim")
+    public void testClaim(HttpServletRequest request, HttpServletResponse response) {
+        Cookie cookie = OAuth2CookieHelper.getAccessTokenCookie(request);
+        if(Objects.nonNull(cookie)){
+            String token = String.format("Bearer %s", cookie.getValue());
+            JwtUtil.getJwtClaimMap(cookie.getValue());
+            logger.info("--------------");
+        }
     }
 
 }
