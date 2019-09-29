@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -44,13 +45,12 @@ public class UserServiceDetail implements UserDetailsService {
             sysUser.setAccount(username);
             userDetails = new SysUserDetails(sysUserService.selectOneSysUser(sysUser, true));
             //获取所有的权限信息
-            Map<Long, SysRole> roleMap = sysRoleService.findSysRoleList(role, true).stream().collect(Collectors.toMap(e -> e.getSrId(), e -> e));
+            Map<Long, SysRole> roleMap = sysRoleService.findSysRoleList(role, true).stream().collect(Collectors.toMap(SysRole::getSrId, Function.identity()));
             //获取当前用户的权限信息
             sysUserRole.setSuId(userDetails.getSysUser().getSuId());
-            List<SysGrantedAuthority> sysRoles = sysUserRoleService.findSysUserRoleList(sysUserRole, true).stream().map(e ->{
+            List<SysGrantedAuthority> sysRoles = sysUserRoleService.findSysUserRoleList(sysUserRole, true).stream().map(e -> {
                 SysRole r = roleMap.get(e.getSrId());
-                SysGrantedAuthority grantedAuthority = new SysGrantedAuthority(r);
-                return grantedAuthority;
+                return new SysGrantedAuthority(r);
             }).collect(Collectors.toList());
             userDetails.setGrantedAuthoritys(sysRoles);
         }catch (Exception e){

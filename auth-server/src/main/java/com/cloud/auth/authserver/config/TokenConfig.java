@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * token存储配置和JWT增强
+ * token相关配置
  */
 @Configuration
 public class TokenConfig {
@@ -40,7 +40,7 @@ public class TokenConfig {
     }
 
     /**
-     * jwt转换器
+     * JWT公司钥加密，本质也是一个TokenEnhancer
      * keyPair就是私钥签名（JWT协议中的signature部分）
      * @return
      */
@@ -56,7 +56,18 @@ public class TokenConfig {
     }
 
     /**
-     * 配置jwt之后需加上这个配置
+     * 一个TokenEnhancer
+     * 增加我们自定义信息
+     * @return
+     */
+    @Bean(name = "jwtTokenEnhancer")
+    @ConditionalOnMissingBean( name = "jwtTokenEnhancer")
+    public TokenEnhancer tokenEnhancer(){
+        return new CloudTokenEnhancer();
+    }
+
+    /**
+     * 配置tokenService
      * @param clientDetailsService
      * @return
      */
@@ -66,7 +77,8 @@ public class TokenConfig {
         DefaultTokenServices tokenServices = new DefaultTokenServices();
         tokenServices.setTokenStore(getRedisTokenStore());
         tokenServices.setSupportRefreshToken(true);
-        tokenServices.setReuseRefreshToken(false); //该字段设置设置refresh token是否重复使用,true:reuse;false:no reuse.(就是说使用refresh token请求新token的时候是使用第一次生成的refresh token还是刷新后每次重新生成的token)
+        //该字段设置设置refresh token是否重复使用,true:reuse;false:no reuse.(就是说使用refresh token请求新token的时候是使用第一次生成的refresh token还是刷新后每次重新生成的token)
+        tokenServices.setReuseRefreshToken(false);
         tokenServices.setClientDetailsService(clientDetailsService);
 
         List<TokenEnhancer> enhancers = new ArrayList<>();
@@ -76,16 +88,6 @@ public class TokenConfig {
         tokenEnhancer.setTokenEnhancers(enhancers);
         tokenServices.setTokenEnhancer(tokenEnhancer);
         return tokenServices;
-    }
-
-    /**
-     * jwt增强:增加我们自定义的信息
-     * @return
-     */
-    @Bean(name = "jwtTokenEnhancer")
-    @ConditionalOnMissingBean( name = "jwtTokenEnhancer")
-    public TokenEnhancer tokenEnhancer(){
-        return new CloudTokenEnhancer();
     }
 
 }

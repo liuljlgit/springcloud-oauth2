@@ -9,13 +9,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 /**
- * PasswordEncoder、AuthenticationManager、LoginAuthenticationProvider、UserServiceDetail是我们登录所需要的
+ * 用户认证和授权校验相关配置
+ * AuthenticationManager需要一个DaoAuthenticationProvider
+ * DaoAuthenticationProvider需要UserDetailsService（获取数据库用户信息）和passwordEncoder（密码加密）
+ * 自定义的UserDetailsService需要实现oauth2的UserDetailsService的loadUserByUsername方法
  */
 @Configuration
-public class StoreConfig {
+public class AuthConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -23,8 +26,8 @@ public class StoreConfig {
     }
 
     @Bean("cloudAuthenticationManager")
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) throws Exception {
-        ProviderManager authenticationManager = new ProviderManager(Arrays.asList(loginAuthenticationProvider(userDetailsService,passwordEncoder)));
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        ProviderManager authenticationManager = new ProviderManager(Collections.singletonList(loginAuthenticationProvider(userDetailsService, passwordEncoder)));
         authenticationManager.setEraseCredentialsAfterAuthentication(false);
         return authenticationManager;
     }
