@@ -19,8 +19,10 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +80,7 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter{
 class AuthExceptionEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
-                         AuthenticationException authException) {
+                         AuthenticationException authException) throws IOException, ServletException {
         log.error("鉴权失败",authException);
         Map<String, Object> map = Maps.newHashMap();
         Throwable cause = authException.getCause();
@@ -86,8 +88,10 @@ class AuthExceptionEntryPoint implements AuthenticationEntryPoint {
         try {
             if(cause instanceof InvalidTokenException) {
                 //未进行授权UNAUTHORIZED
-                response.getWriter().write(RespEntity.commonResp(CodeEnum.EXEC_ERROR,null));
+                response.setStatus(401);
+                response.getWriter().write(RespEntity.commonResp(CodeEnum.EXEC_401,null));
             }else{
+                response.setStatus(403);
                 response.getWriter().write(RespEntity.commonResp(CodeEnum.EXEC_403,null));
             }
         } catch (Exception e) {

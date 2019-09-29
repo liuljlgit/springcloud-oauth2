@@ -80,8 +80,10 @@ class AuthExceptionEntryPoint implements AuthenticationEntryPoint {
         try {
             if(cause instanceof InvalidTokenException) {
                 //未进行授权UNAUTHORIZED
-                RespEntity.commonResp(CodeEnum.EXEC_ERROR,null);
+                response.setStatus(401);
+                RespEntity.commonResp(CodeEnum.EXEC_401,null);
             }else{
+                response.setStatus(403);
                 RespEntity.commonResp(CodeEnum.EXEC_403,null);
             }
         } catch (Exception e) {
