@@ -40,6 +40,7 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter{
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
+        //stateless 标志，指示仅允许对这些资源进行基于令牌的身份验证。
         resources.resourceId(RESOURCE_ID).stateless(true);
         resources.authenticationEntryPoint(new AuthExceptionEntryPoint())
                 .accessDeniedHandler(new CustomAccessDeniedHandler());
