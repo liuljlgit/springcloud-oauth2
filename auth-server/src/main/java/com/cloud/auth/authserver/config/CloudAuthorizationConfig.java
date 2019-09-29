@@ -1,5 +1,6 @@
 package com.cloud.auth.authserver.config;
 
+import com.cloud.auth.authserver.security.exception.CustomWebResponseExceptionTranslator;
 import com.cloud.auth.authserver.security.login.UserServiceDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +47,9 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
     @Autowired
     DefaultTokenServices cloudTokenServices;
 
+    @Autowired
+    private CustomWebResponseExceptionTranslator customWebResponseExceptionTranslator;
+
     /**
      * 配置客户端信息
      * @param clients
@@ -65,7 +69,8 @@ public class CloudAuthorizationConfig extends AuthorizationServerConfigurerAdapt
         endpoints.authenticationManager(authenticationManager)
                 .userDetailsService(userServiceDetail)
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST)
-                .tokenServices(cloudTokenServices);
+                .tokenServices(cloudTokenServices)
+                .exceptionTranslator(customWebResponseExceptionTranslator);
 
         CompositeTokenGranter tokenGranter = new CompositeTokenGranter(getDefaultTokenGranters(cloudTokenServices,customJdbcClientDetailsService));
         endpoints.tokenGranter(tokenGranter);

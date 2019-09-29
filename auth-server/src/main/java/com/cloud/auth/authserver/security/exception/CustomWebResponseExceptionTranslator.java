@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * oauth2中开放的资源出现错误时的处理方式
+ */
 @Component("customWebResponseExceptionTranslator")
 public class CustomWebResponseExceptionTranslator implements WebResponseExceptionTranslator {
     @Override

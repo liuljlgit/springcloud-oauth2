@@ -38,6 +38,7 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter{
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
         resources.resourceId(RESOURCE_ID).stateless(true);
+        //这里配置的错误拦截的时校验的路径出现的错误
         resources.authenticationEntryPoint(new AuthExceptionEntryPoint())
                  .accessDeniedHandler(new CustomAccessDeniedHandler());
     }
