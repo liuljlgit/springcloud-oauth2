@@ -25,6 +25,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 资源服务器中配置的ignoreUris只会对本服务起作用
+ * ignoreUris带上网关前缀也是起作用的
+ */
 @Configuration
 @EnableResourceServer
 @ImportResource(locations = {"classpath*:spring-security.xml"})

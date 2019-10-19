@@ -26,14 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 资源服务器
- * 注意:只是保护网关的资源
+ * 资源服务器中配置的ignoreUris只会对本服务起作用
+ * ignoreUris带上网关前缀也是起作用的
  */
 @Configuration
 @EnableResourceServer
 public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
 
-    public static List<String> ignoreUris = Lists.newArrayList("/signin","/signout","/refreshtoken","/**");
+    public static List<String> ignoreUris = Lists.newArrayList("/app/zuul/signin","/signout","/refreshtoken");
 
     @Autowired
     @Qualifier("tokenServices")
