@@ -33,7 +33,7 @@ import java.util.Map;
 @EnableResourceServer
 public class CloudResourceConfig extends ResourceServerConfigurerAdapter {
 
-    public static List<String> ignoreUris = Lists.newArrayList("/signin","/signout","/refreshtoken");
+    public static List<String> ignoreUris = Lists.newArrayList("/signin","/signout","/refreshtoken","/**");
 
     @Autowired
     @Qualifier("tokenServices")

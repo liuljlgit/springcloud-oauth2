@@ -3,8 +3,8 @@ package com.cloud.data.dataserver.config;
 
 import com.cloud.common.webcomm.CodeEnum;
 import com.cloud.common.webcomm.RespEntity;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,7 +18,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,8 +31,7 @@ import java.util.Map;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class CloudResourceConfig extends ResourceServerConfigurerAdapter{
 
-    @Autowired(required = false)
-    private CloudResourceConfiguration cloudResourceConfiguration;
+    public static List<String> ignoreUris = Lists.newArrayList();
 
     @Value("${spring.application.name}")
     private String RESOURCE_ID;
@@ -49,24 +47,13 @@ public class CloudResourceConfig extends ResourceServerConfigurerAdapter{
     @Override
     public void configure(HttpSecurity http) throws Exception {
 
-        //如果配置了Spring-security.xml就已xml中配置为准
-        String[] antMatchers;
-        if ( null != cloudResourceConfiguration && !CollectionUtils.isEmpty(cloudResourceConfiguration.getAntMatchersList())){
-            antMatchers = new String[cloudResourceConfiguration.getAntMatchersList().size()];
-            for ( int i = 0;i< cloudResourceConfiguration.getAntMatchersList().size();i++){
-                antMatchers[i] = cloudResourceConfiguration.getAntMatchersList().get(i).trim();
-            }
-            http.cors().and().csrf().disable()
-                    .authorizeRequests()
-                    .antMatchers(antMatchers).permitAll()
-                    .anyRequest().authenticated()
-                    .and()
-                    .httpBasic();
-            return;
-        }
 
-        http.cors().and().csrf().disable()
+        http.
+                csrf().disable()
+                .exceptionHandling().authenticationEntryPoint(new AuthExceptionEntryPoint())//不存在access_token时候响应
+                .and()
                 .authorizeRequests()
+                .antMatchers(ignoreUris.toArray(new String[ignoreUris.size()])).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();
@@ -113,23 +100,3 @@ class CustomAccessDeniedHandler implements AccessDeniedHandler {
         RespEntity.commonResp(CodeEnum.EXEC_403,null);
     }
 }
-
-/**
- * 资源路径配置类
- */
-class CloudResourceConfiguration {
-    private List<String> antMatchersList;
-
-    public CloudResourceConfiguration() {
-
-    }
-
-    public List<String> getAntMatchersList() {
-        return this.antMatchersList;
-    }
-
-    public void setAntMatchersList(List<String> antMatchersList) {
-        this.antMatchersList = antMatchersList;
-    }
-}
-
