@@ -7,7 +7,6 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.AuthenticationException;
@@ -31,10 +30,9 @@ import java.util.Map;
  */
 @Configuration
 @EnableResourceServer
-@ImportResource(locations = {"classpath*:spring-security.xml"})
 public class CloudResourceConfig extends ResourceServerConfigurerAdapter{
 
-    public static List<String> ignoreUris = Lists.newArrayList();
+    public static List<String> ignoreUris = Lists.newArrayList("/**");
 
     @Value("${spring.application.name}")
     private String RESOURCE_ID;

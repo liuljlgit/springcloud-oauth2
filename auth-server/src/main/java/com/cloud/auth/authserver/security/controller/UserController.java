@@ -34,7 +34,7 @@ public class UserController {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @RequestMapping(value = "/current", method = RequestMethod.GET)
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
     public Principal getUser(Principal principal) {
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>>");
         logger.info(principal.toString());
